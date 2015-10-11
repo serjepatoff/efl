@@ -4,12 +4,12 @@
 # This file is distributed under the same license as the Efl package.
 # Aron Xu <happyaron.xu@gmail.com>, 2012.
 #
-#: src/lib/elementary/elm_config.c:3766
+#: src/lib/elementary/elm_config.c:3770
 msgid ""
 msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2016-11-01 22:10+0900\n"
+"POT-Creation-Date: 2016-11-16 11:02+0200\n"
 "PO-Revision-Date: 2012-12-22 03:55+0800\n"
 "Last-Translator: Aron Xu <happyaron.xu@gmail.com>\n"
 "Language-Team: Chinese (simplified)\n"
@@ -253,7 +253,7 @@ msgid "Search"
 msgstr ""
 
 #: src/lib/elementary/elc_fileselector.c:2230
-#: src/lib/elementary/elm_entry.c:1704 src/lib/elementary/elm_entry.c:1729
+#: src/lib/elementary/elm_entry.c:1709 src/lib/elementary/elm_entry.c:1734
 msgid "Cancel"
 msgstr "取消"
 
@@ -282,28 +282,28 @@ msgstr ""
 msgid "multi button entry item"
 msgstr ""
 
-#: src/lib/elementary/elc_multibuttonentry.c:1597
+#: src/lib/elementary/elc_multibuttonentry.c:1605
 msgid "multi button entry"
 msgstr ""
 
-#: src/lib/elementary/elc_naviframe.c:441
+#: src/lib/elementary/elc_naviframe.c:442
 msgid "Title"
 msgstr ""
 
-#: src/lib/elementary/elc_naviframe.c:992
-#: src/lib/elementary/elc_naviframe.c:1200
+#: src/lib/elementary/elc_naviframe.c:993
+#: src/lib/elementary/elc_naviframe.c:1201
 msgid "Back"
 msgstr ""
 
-#: src/lib/elementary/elc_naviframe.c:1299
+#: src/lib/elementary/elc_naviframe.c:1300
 msgid "Next"
 msgstr ""
 
-#: src/lib/elementary/elc_popup.c:295 src/lib/elementary/elc_popup.c:953
+#: src/lib/elementary/elc_popup.c:298 src/lib/elementary/elc_popup.c:956
 msgid "Popup Title"
 msgstr ""
 
-#: src/lib/elementary/elc_popup.c:305 src/lib/elementary/elc_popup.c:1029
+#: src/lib/elementary/elc_popup.c:308 src/lib/elementary/elc_popup.c:1032
 msgid "Popup Body Text"
 msgstr ""
 
@@ -423,7 +423,7 @@ msgid "color selector palette item"
 msgstr "色彩选择器项目"
 
 # Don't change it!
-#: src/lib/elementary/elm_config.c:3783
+#: src/lib/elementary/elm_config.c:3787
 msgid "default:LTR"
 msgstr "default:LTR"
 
@@ -436,23 +436,23 @@ msgstr "磁盘选择器项目"
 msgid "diskselector item"
 msgstr "磁盘选择器项目"
 
-#: src/lib/elementary/elm_entry.c:1694
+#: src/lib/elementary/elm_entry.c:1699
 msgid "Cut"
 msgstr "粘贴"
 
-#: src/lib/elementary/elm_entry.c:1697
+#: src/lib/elementary/elm_entry.c:1702
 msgid "Copy"
 msgstr "复制"
 
-#: src/lib/elementary/elm_entry.c:1701 src/lib/elementary/elm_entry.c:1723
+#: src/lib/elementary/elm_entry.c:1706 src/lib/elementary/elm_entry.c:1728
 msgid "Paste"
 msgstr "粘贴"
 
-#: src/lib/elementary/elm_entry.c:1716
+#: src/lib/elementary/elm_entry.c:1721
 msgid "Select"
 msgstr "选择"
 
-#: src/lib/elementary/elm_entry.c:3796
+#: src/lib/elementary/elm_entry.c:3801
 msgid "Entry"
 msgstr "条目"
 

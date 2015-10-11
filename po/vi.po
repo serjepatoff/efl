@@ -3,12 +3,12 @@
 # This file is put in the public domain.
 # Thiep Ha <thiepha@gmail.com>, 2015.
 #
-#: src/lib/elementary/elm_config.c:3766
+#: src/lib/elementary/elm_config.c:3770
 msgid ""
 msgstr ""
 "Project-Id-Version: elementary\n"
 "Report-Msgid-Bugs-To: enlightenment-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2016-11-01 22:10+0900\n"
+"POT-Creation-Date: 2016-11-16 11:02+0200\n"
 "PO-Revision-Date: 2015-09-29 18:06+0900\n"
 "Last-Translator: Thiep Ha <thiepha@gmail.com>\n"
 "Language-Team: General\n"
@@ -253,7 +253,7 @@ msgid "Search"
 msgstr "Tìm Kiếm"
 
 #: src/lib/elementary/elc_fileselector.c:2230
-#: src/lib/elementary/elm_entry.c:1704 src/lib/elementary/elm_entry.c:1729
+#: src/lib/elementary/elm_entry.c:1709 src/lib/elementary/elm_entry.c:1734
 msgid "Cancel"
 msgstr "Hủy"
 
@@ -282,28 +282,28 @@ msgstr "Nhãn Của Bộ Nhập Nhiều Nút"
 msgid "multi button entry item"
 msgstr "Mục Của Bộ Nhập Nhiều Nút"
 
-#: src/lib/elementary/elc_multibuttonentry.c:1597
+#: src/lib/elementary/elc_multibuttonentry.c:1605
 msgid "multi button entry"
 msgstr "Bộ Nhập Nhiều Nút"
 
-#: src/lib/elementary/elc_naviframe.c:441
+#: src/lib/elementary/elc_naviframe.c:442
 msgid "Title"
 msgstr "Đề Mục"
 
-#: src/lib/elementary/elc_naviframe.c:992
-#: src/lib/elementary/elc_naviframe.c:1200
+#: src/lib/elementary/elc_naviframe.c:993
+#: src/lib/elementary/elc_naviframe.c:1201
 msgid "Back"
 msgstr "Quay Lại"
 
-#: src/lib/elementary/elc_naviframe.c:1299
+#: src/lib/elementary/elc_naviframe.c:1300
 msgid "Next"
 msgstr "Tiếp"
 
-#: src/lib/elementary/elc_popup.c:295 src/lib/elementary/elc_popup.c:953
+#: src/lib/elementary/elc_popup.c:298 src/lib/elementary/elc_popup.c:956
 msgid "Popup Title"
 msgstr "Tiêu Đề Hộp Thoại"
 
-#: src/lib/elementary/elc_popup.c:305 src/lib/elementary/elc_popup.c:1029
+#: src/lib/elementary/elc_popup.c:308 src/lib/elementary/elc_popup.c:1032
 msgid "Popup Body Text"
 msgstr "Văn Bản Thân Hộp Thoại"
 
@@ -417,7 +417,7 @@ msgstr "Độ Mờ:"
 msgid "color selector palette item"
 msgstr "Mục Của Bảng Chọn Màu"
 
-#: src/lib/elementary/elm_config.c:3783
+#: src/lib/elementary/elm_config.c:3787
 msgid "default:LTR"
 msgstr "Mặc Định: Trái Sang Phải"
 
@@ -429,23 +429,23 @@ msgstr "Mục Của Bảng Chọn Ngày"
 msgid "diskselector item"
 msgstr "Mục Của Bộ Chọn Đĩa"
 
-#: src/lib/elementary/elm_entry.c:1694
+#: src/lib/elementary/elm_entry.c:1699
 msgid "Cut"
 msgstr "Cắt"
 
-#: src/lib/elementary/elm_entry.c:1697
+#: src/lib/elementary/elm_entry.c:1702
 msgid "Copy"
 msgstr "Sao Chép"
 
-#: src/lib/elementary/elm_entry.c:1701 src/lib/elementary/elm_entry.c:1723
+#: src/lib/elementary/elm_entry.c:1706 src/lib/elementary/elm_entry.c:1728
 msgid "Paste"
 msgstr "Dán"
 
-#: src/lib/elementary/elm_entry.c:1716
+#: src/lib/elementary/elm_entry.c:1721
 msgid "Select"
 msgstr "Chọn"
 
-#: src/lib/elementary/elm_entry.c:3796
+#: src/lib/elementary/elm_entry.c:3801
 msgid "Entry"
 msgstr "Bộ Nhập"
 

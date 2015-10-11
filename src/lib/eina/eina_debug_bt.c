@@ -16,9 +16,15 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "eina_debug.h"
+# ifdef HAVE_CONFIG_H
+#  include "config.h"
+# endif
 
-#ifdef EINA_HAVE_DEBUG
+#ifdef HAVE_DLADDR
+# include <dlfcn.h>
+#endif
+
+#include "eina_debug.h"
 
 void
 _eina_debug_dump_fhandle_bt(FILE *f, void **bt, int btlen)
@@ -46,4 +52,3 @@ _eina_debug_dump_fhandle_bt(FILE *f, void **bt, int btlen)
         else fprintf(f, "??\t -\n");
      }
 }
-#endif

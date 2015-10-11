@@ -171,6 +171,9 @@ typedef Eo Efl_Future;
  */
 EAPI extern const Eina_Value_Type *EFL_DBG_INFO_TYPE;
 
+EAPI const Eina_List *
+eo_debug_objects_list_get(void);
+
 /**
  * Creates a list inside debug info list.
  * @param[in] list list where to append

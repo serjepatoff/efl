@@ -53,6 +53,27 @@ static void _vtable_init(Eo_Vtable *vtable, size_t size);
       (_eo_classes[_UNMASK_ID(id) - 1]) : NULL); \
       })
 
+static Eina_List *_objs_list = NULL; /* List of Eo used for debug */
+
+EAPI const Eina_List *
+eo_debug_objects_list_get(void)
+{
+   return _objs_list;
+}
+
+static void
+_debug_obj_del(void *data EINA_UNUSED, const Efl_Event *ev)
+{
+   _objs_list = eina_list_remove(_objs_list, ev->object);
+}
+
+static void
+_debug_object_add(Eo *obj)
+{
+   _objs_list = eina_list_append(_objs_list, obj);
+   efl_event_callback_add(obj, EFL_EVENT_DEL, _debug_obj_del, NULL);
+}
+
 static inline void
 _vtable_chain2_unref(Dich_Chain2 *chain)
 {
@@ -864,6 +885,7 @@ _efl_add_end(Eo *eo_id, Eina_Bool is_ref, Eina_Bool is_fallback)
         _efl_add_fallback_stack_pop();
      }
 
+   _debug_object_add(ret);
    return ret;
 }
 

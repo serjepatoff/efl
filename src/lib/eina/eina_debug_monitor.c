@@ -42,6 +42,8 @@ static int                *_bt_buf_len;
 static struct timespec    *_bt_ts;
 static int                *_bt_cpu;
 
+static Eina_Debug_Session *main_session = NULL;
+
 // a backtracer that uses libunwind to do the job
 static inline int
 _eina_debug_unwind_bt(void **bt, int max)
@@ -182,8 +184,8 @@ _eina_debug_monitor(void *_data EINA_UNUSED)
         FD_ZERO(&wfds);
         FD_ZERO(&exfds);
         // the only fd we care about - out debug daemon connection
-        FD_SET(_eina_debug_monitor_service_fd, &rfds);
-        max_fd = _eina_debug_monitor_service_fd;
+        FD_SET(main_session->fd, &rfds);
+        max_fd = main_session->fd;
         // if we are in a polling mode then set up a timeout and wait for it
         if (poll_on)
           {
@@ -197,7 +199,7 @@ _eina_debug_monitor(void *_data EINA_UNUSED)
         // we have no timeout - so wait forever for a message from debugd
         else ret = select(max_fd + 1, &rfds, &wfds, &exfds, NULL);
         // if the fd for debug daemon says it's alive, process it
-        if ((ret == 1) && (FD_ISSET(_eina_debug_monitor_service_fd, &rfds)))
+        if ((ret == 1) && (FD_ISSET(main_session->fd, &rfds)))
           {
              // collect a single op on the debug daemon control fd
              char op[5];
@@ -206,7 +208,7 @@ _eina_debug_monitor(void *_data EINA_UNUSED)
 
              // get the opcode and stor in op - guarantee its 0 byte terminated
              data = NULL;
-             size = _eina_debug_monitor_service_read(op, &data);
+             size = _eina_debug_session_receive(main_session, op, &data);
              // if not negative - we have a real message
              if (size >= 0)
                {
@@ -353,13 +355,14 @@ fail:
 
 // start up the debug monitor if we haven't already
 void
-_eina_debug_monitor_thread_start(void)
+_eina_debug_monitor_thread_start(Eina_Debug_Session *session)
 {
    int err;
    sigset_t oldset, newset;
 
    // if it's already running - we're good.
    if (_monitor_thread_runs) return;
+   main_session = session;
    // create debug monitor thread
    sigemptyset(&newset);
    sigaddset(&newset, SIGPIPE);
@@ -410,7 +413,7 @@ _socket_home_get()
 }
 
 // connect to efl_debugd
-void
+Eina_Debug_Session *
 _eina_debug_monitor_service_connect(void)
 {
    char buf[4096];
@@ -443,11 +446,13 @@ _eina_debug_monitor_service_connect(void)
    if (connect(fd, (struct sockaddr *)&socket_unix, socket_unix_len) < 0)
      goto err;
    // we succeeded - store fd
-   _eina_debug_monitor_service_fd = fd;
-   return;
+   Eina_Debug_Session *session = calloc(1, sizeof(*session));
+   session->fd = fd;
+   return session;
 err:
    // some kind of connection failure here, so close a valid socket and
    // get out of here
    if (fd >= 0) close(fd);
+   return NULL;
 }
 #endif

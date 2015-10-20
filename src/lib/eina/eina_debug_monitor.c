@@ -323,7 +323,7 @@ _eina_debug_monitor(void *_data EINA_UNUSED)
         if (ret)
           {
              //check which fd are set/ready for read
-             for (i = 0; i < FD_SETSIZE; ++i)
+             for (i = 0; i < FD_SETSIZE && ret; ++i)
                {
                   if (FD_ISSET (i, &rfds))
                     {
@@ -358,6 +358,7 @@ _eina_debug_monitor(void *_data EINA_UNUSED)
                               }
 
                          }
+                       ret--;
                     }
                }
           }

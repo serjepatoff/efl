@@ -53,6 +53,89 @@ static void _vtable_init(Eo_Vtable *vtable, size_t size);
       (_eo_classes[_UNMASK_ID(id) - 1]) : NULL); \
       })
 
+static Eina_List *_objs_list = NULL; /* List of Obj_Info */
+static uint32_t _debug_objs_list_op = EINA_DEBUG_OPCODE_INVALID;
+
+static Eina_Bool
+_debug_list_req_cb(Eina_Debug_Client *src, void *buffer EINA_UNUSED, int size EINA_UNUSED)
+{
+   char *req_classname = NULL;
+   printf("LIST_REQ %s\n", req_classname);
+   Eina_List *itr;
+   Eo *obj;
+   unsigned int strings_size = 0;
+
+   EINA_LIST_FOREACH(_objs_list, itr, obj)
+     {
+        strings_size += strlen(eo_class_name_get(obj)) + 1;
+     }
+
+   unsigned int objs_count = eina_list_count(_objs_list);
+   unsigned int resp_size = objs_count * sizeof(uint64_t) + strings_size;
+   unsigned char *buf = alloca(resp_size);
+   unsigned int size_curr = 0;
+
+   EINA_LIST_FOREACH(_objs_list, itr, obj)
+     {
+        const char *kl_name = eo_class_name_get(obj);
+        memcpy(buf + size_curr, &obj, sizeof(uint64_t));
+        size_curr += sizeof(uint64_t);
+        unsigned int len = strlen(kl_name) + 1;
+        memcpy(buf + size_curr, kl_name, len);
+        size_curr += len;
+     }
+
+   eina_debug_session_send(src, _debug_objs_list_op, buf, resp_size);
+
+   return EINA_TRUE;
+}
+
+EAPI Eina_List *
+eo_debug_list_response_decode(void *buffer, int size)
+{
+   Eina_List *list = NULL;
+   char *buf = buffer;
+   while(size > 0)
+     {
+        int len;
+        Obj_Info *info = calloc(1, sizeof(*info));
+        memcpy(&(info->ptr), buf, sizeof(uint64_t));
+        buf += sizeof(uint64_t);
+        len = strlen(buf) + 1;
+        info->kl_name = strdup(buf);
+        buf += len;
+        size -= (len + sizeof(uint64_t));
+        list = eina_list_append(list, info);
+     }
+   return list;
+}
+
+static Eina_Bool
+_debug_obj_del(void *data EINA_UNUSED, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   _objs_list = eina_list_remove(_objs_list, obj);
+   return EINA_TRUE;
+}
+
+static void
+_debug_object_add(Eo *obj)
+{
+   _objs_list = eina_list_append(_objs_list, obj);
+   eo_do(obj, eo_event_callback_add(EO_EV_DEL, _debug_obj_del, NULL));
+}
+
+static const Eina_Debug_Opcode _debug_ops[] = {
+       {"Eo/list", &_debug_objs_list_op, &_debug_list_req_cb},
+       {NULL, NULL, NULL}
+};
+
+static Eina_Bool
+_debug_init()
+{
+   eina_debug_opcodes_register(NULL, _debug_ops, NULL);
+   return EINA_TRUE;
+}
+
 static inline void
 _vtable_chain2_unref(Dich_Chain2 *chain)
 {
@@ -864,6 +947,7 @@ _efl_add_end(Eo *eo_id, Eina_Bool is_ref, Eina_Bool is_fallback)
         _efl_add_fallback_stack_pop();
      }
 
+   _debug_object_add(ret);
    return ret;
 }
 
@@ -1882,6 +1966,7 @@ efl_object_init(void)
      return EINA_TRUE;
 
    eina_init();
+   _debug_init();
 
    _efl_object_main_thread = eina_thread_self();
 

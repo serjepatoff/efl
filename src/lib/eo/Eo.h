@@ -171,16 +171,6 @@ typedef Eo Efl_Future;
  */
 EAPI extern const Eina_Value_Type *EFL_DBG_INFO_TYPE;
 
-typedef struct
-{
-   Eo *ptr;
-   Eo *parent;
-   char *kl_name;
-} Obj_Info;
-
-EAPI Eina_List *
-eo_debug_list_response_decode(void *buffer, int size);
-
 EAPI const Eina_List *
 eo_debug_objects_list_get(void);
 

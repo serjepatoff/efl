@@ -113,7 +113,7 @@ struct _Ecore_Drm_Plane
    unsigned int rotation_map[6];
    unsigned int supported_rotations;
    Ecore_Drm_Plane_Type type;
-} Ecore_Drm_Plane;
+};
 
 struct _Ecore_Drm_Output
 {

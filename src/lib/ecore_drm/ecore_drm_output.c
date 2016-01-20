@@ -424,6 +424,106 @@ _ecore_drm_output_subpixel_get(int subpixel)
      }
 }
 
+static void
+_ecore_drm_output_planes_find(Ecore_Drm_Output *output)
+{
+   Ecore_Drm_Device *dev;
+   Ecore_Drm_Plane *eplane;
+   drmModePlaneRes *pres;
+   unsigned int i = 0, j = 0;
+   int k = 0;
+
+   dev = output->dev;
+   pres = drmModeGetPlaneResources(dev->drm.fd);
+   if (!pres) return;
+
+   DBG("\tPossible Planes:");
+   for (; i < pres->count_planes; i++)
+     {
+        drmModePlane *plane;
+        drmModeObjectPropertiesPtr props;
+        int type = -1;
+
+        plane = drmModeGetPlane(dev->drm.fd, pres->planes[i]);
+        if (!plane) continue;
+
+        if (!(plane->possible_crtcs & (1 << output->crtc_index)))
+          goto free_plane;
+
+        DBG("\t\tPlane %d", plane->plane_id);
+
+        props =
+          drmModeObjectGetProperties(dev->drm.fd, plane->plane_id,
+                                     DRM_MODE_OBJECT_PLANE);
+        if (!props) goto free_plane;
+
+        eplane = calloc(1, sizeof(Ecore_Drm_Plane));
+        if (!eplane) goto free_plane;
+
+        eplane->id = plane->plane_id;
+
+        for (j = 0; type == -1 && j < props->count_props; j++)
+          {
+             drmModePropertyPtr prop;
+
+             prop = drmModeGetProperty(dev->drm.fd, props->props[j]);
+             if (!prop) continue;
+
+             if (!strcmp(prop->name, "type"))
+               {
+                  eplane->type = props->prop_values[j];
+                  if (eplane->type == ECORE_DRM_PLANE_TYPE_PRIMARY)
+                    output->primary_plane_id = eplane->id;
+               }
+             else if (!strcmp(prop->name, "rotation"))
+               {
+                  output->rotation_prop_id = props->props[j];
+                  eplane->rotation = props->prop_values[j];
+
+                  for (k = 0; k < prop->count_enums; k++)
+                    {
+                       int r = -1;
+
+                       if (!strcmp(prop->enums[k].name, "rotate-0"))
+                         r = ECORE_DRM_PLANE_ROTATION_NORMAL;
+                       else if (!strcmp(prop->enums[k].name, "rotate-90"))
+                         r = ECORE_DRM_PLANE_ROTATION_90;
+                       else if (!strcmp(prop->enums[k].name, "rotate-180"))
+                         r = ECORE_DRM_PLANE_ROTATION_180;
+                       else if (!strcmp(prop->enums[k].name, "rotate-270"))
+                         r = ECORE_DRM_PLANE_ROTATION_270;
+                       else if (!strcmp(prop->enums[k].name, "reflect-x"))
+                         r = ECORE_DRM_PLANE_ROTATION_REFLECT_X;
+                       else if (!strcmp(prop->enums[k].name, "reflect-y"))
+                         r = ECORE_DRM_PLANE_ROTATION_REFLECT_Y;
+
+                       if (r != -1)
+                         {
+                            eplane->supported_rotations |= r;
+                            eplane->rotation_map[ffs(r)] =
+                              1 << prop->enums[k].value;
+                         }
+                    }
+               }
+
+             drmModeFreeProperty(prop);
+          }
+
+        DBG("\t\t\tSupported Rotations: %d", eplane->supported_rotations);
+        DBG("\t\t\tCurrent Rotation: %d", eplane->rotation);
+
+        /* for (j = 0; j < 6; j++) */
+        /*   { */
+        /*      DBG("\t\t\tRotation Map %d: %d", j, eplane->rotation_map[j]); */
+        /*   } */
+
+        output->planes = eina_list_append(output->planes, eplane);
+
+free_plane:
+        drmModeFreePlane(plane);
+     }
+}
+
 static Ecore_Drm_Output *
 _ecore_drm_output_create(Ecore_Drm_Device *dev, drmModeRes *res, drmModeConnector *conn, int x, int y, Eina_Bool cloned)
 {
@@ -467,6 +567,7 @@ _ecore_drm_output_create(Ecore_Drm_Device *dev, drmModeRes *res, drmModeConnecto
    snprintf(name, sizeof(name), "%s-%d", type, conn->connector_type_id);
    eina_stringshare_replace(&output->name, name);
 
+   output->crtc_index = i;
    output->crtc_id = res->crtcs[i];
    output->pipe = i;
    dev->crtc_allocator |= (1 << output->crtc_id);
@@ -558,6 +659,8 @@ _ecore_drm_output_create(Ecore_Drm_Device *dev, drmModeRes *res, drmModeConnecto
             (conn->count_modes == 0) ? ", built-in" : "");
      }
 
+   _ecore_drm_output_planes_find(output);
+
    return output;
 
 err:
@@ -578,6 +681,7 @@ static void
 _ecore_drm_output_free(Ecore_Drm_Output *output)
 {
    Ecore_Drm_Output_Mode *mode;
+   Ecore_Drm_Plane *plane;
 
    /* check for valid output */
    if (!output) return;
@@ -604,6 +708,9 @@ _ecore_drm_output_free(Ecore_Drm_Output *output)
    /* free modes */
    EINA_LIST_FREE(output->modes, mode)
      free(mode);
+
+   EINA_LIST_FREE(output->planes, plane)
+     free(plane);
 
    /* free strings */
    if (output->name) eina_stringshare_del(output->name);
@@ -789,6 +896,7 @@ _ecore_drm_output_render_disable(Ecore_Drm_Output *output)
    ecore_drm_output_dpms_set(output, DRM_MODE_DPMS_OFF);
 }
 
+#if 0
 static void
 _ecore_drm_output_planes_get(Ecore_Drm_Device *dev)
 {
@@ -877,6 +985,7 @@ free_plane:
 
    drmModeFreePlaneResources(pres);
 }
+#endif
 
 /* public functions */
 
@@ -951,7 +1060,7 @@ next:
      }
 
    /* TODO: Planes */
-   _ecore_drm_output_planes_get(dev);
+   /* _ecore_drm_output_planes_get(dev); */
 
    ret = EINA_TRUE;
    if (eina_list_count(dev->outputs) < 1) 
@@ -1480,4 +1589,50 @@ ecore_drm_output_mode_set(Ecore_Drm_Output *output, Ecore_Drm_Output_Mode *mode,
      }
 
    return ret;
+}
+
+EAPI Eina_Bool
+ecore_drm_output_rotation_set(Ecore_Drm_Output *output, Ecore_Drm_Plane_Type type, unsigned int rotation)
+{
+   Ecore_Drm_Plane *plane;
+   Eina_List *l;
+
+   EINA_SAFETY_ON_NULL_RETURN_VAL(output, EINA_FALSE);
+
+   EINA_LIST_FOREACH(output->planes, l, plane)
+     {
+        if (plane->type != type) continue;
+        if ((plane->supported_rotations & rotation) == 0)
+          {
+             WRN("Unsupported rotation");
+             return EINA_FALSE;
+          }
+
+        drmModeObjectSetProperty(output->dev->drm.fd,
+                                 output->primary_plane_id,
+                                 DRM_MODE_OBJECT_PLANE,
+                                 output->rotation_prop_id,
+                                 plane->rotation_map[ffs(rotation)]);
+     }
+
+   return EINA_TRUE;
+}
+
+EAPI unsigned int
+ecore_drm_output_supported_rotations_get(Ecore_Drm_Output *output, Ecore_Drm_Plane_Type type)
+{
+   Ecore_Drm_Plane *plane;
+   Eina_List *l;
+   unsigned int rot = -1;
+
+   EINA_SAFETY_ON_NULL_RETURN_VAL(output, rot);
+
+   EINA_LIST_FOREACH(output->planes, l, plane)
+     {
+        if (plane->type != type) continue;
+        rot = plane->supported_rotations;
+        break;
+     }
+
+   return rot;
 }

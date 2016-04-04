@@ -2221,6 +2221,30 @@ class Edje.Object (Evas.Smart_Clipped, Efl.File)
             scale: double; [[The transition duration factor]]
          }
       }
+      @property part_file {
+         set {
+              [[Set the EDJ file (and group within it) the part of the given edje object.
+
+                This has no effect if the type of part is not EDJE_PART_TYPE_GROUP.
+
+                @since 1.18]]
+            return: bool;
+         }
+         get {
+              [[Retrieve the file and group name that the part of the given edje object is bound to.
+
+                This has no effect if the type of part is not EDJE_PART_TYPE_GROUP.
+
+                @since 1.18]]
+         }
+         keys {
+            part: const(char)*; [[The part name]]
+         }
+         values {
+            file: const(char)*; [[The file path]]
+            group: const(char)*; [[The group name]]
+         }
+      }
    }
    implements {
       Eo.Base.constructor;

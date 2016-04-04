@@ -350,6 +350,62 @@ _edje_object_evas_object_smart_calculate(Eo *obj EINA_UNUSED, Edje *ed)
    _edje_recalc_do(ed);
 }
 
+EOLIAN static void
+_edje_object_part_file_get(Eo *obj EINA_UNUSED, Edje *ed,
+                           const char *part,
+                           const char **file,
+                           const char **group)
+{
+   unsigned int i;
+
+   for (i = 0; i < ed->table_parts_size; i++)
+     {
+        if (!strcmp(ed->table_parts[i]->part->name, part))
+          {
+             if ((ed->table_parts[i]->part->type == EDJE_PART_TYPE_GROUP) &&
+                 (ed->table_parts[i]->type == EDJE_RP_TYPE_SWALLOW) &&
+                 (ed->table_parts[i]->typedata.swallow) &&
+                 (ed->table_parts[i]->typedata.swallow->swallowed_object))
+               {
+                  efl_file_get(ed->table_parts[i]->typedata.swallow->swallowed_object,
+                               file, group);
+                  return;
+               }
+             break;
+          }
+     }
+
+   if (file) *file = NULL;
+   if (group) *group = NULL;
+}
+
+EOLIAN static Eina_Bool
+_edje_object_part_file_set(Eo *obj EINA_UNUSED, Edje *ed,
+                           const char *part,
+                           const char *file,
+                           const char *group)
+{
+   unsigned int i;
+
+   for (i = 0; i < ed->table_parts_size; i++)
+     {
+        if (!strcmp(ed->table_parts[i]->part->name, part))
+          {
+             if ((ed->table_parts[i]->part->type == EDJE_PART_TYPE_GROUP) &&
+                 (ed->table_parts[i]->type == EDJE_RP_TYPE_SWALLOW) &&
+                 (ed->table_parts[i]->typedata.swallow) &&
+                 (ed->table_parts[i]->typedata.swallow->swallowed_object))
+               {
+                  return efl_file_set(ed->table_parts[i]->typedata.swallow->swallowed_object,
+                                      file, group);
+               }
+             break;
+          }
+     }
+
+   return EINA_FALSE;
+}
+
 EOLIAN static Eina_Bool
 _edje_object_efl_file_file_set(Eo *obj, Edje *ed, const char *file, const char *group)
 {

@@ -1,0 +1,9 @@
+class Focus.Test(Efl.Ui.Focus.Object,  Efl.Gfx) {
+    implements {
+        Eo.Base.constructor;
+        Efl.Gfx.position.set;
+        Efl.Gfx.position.get;
+        Efl.Gfx.size.set;
+        Efl.Gfx.size.get;
+    }
+}

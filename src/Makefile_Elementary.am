@@ -140,6 +140,7 @@ elm_public_eolian_files = \
 	lib/elementary/elm_code_widget.eo \
     lib/elementary/efl_ui_text_interactive.eo \
 	lib/elementary/efl_ui_text.eo \
+	lib/elementary/efl_ui_focus_manager.eo \
 	$(NULL)
 
 # Private classes (not exposed or shipped)
@@ -695,6 +696,7 @@ lib_elementary_libelementary_la_SOURCES = \
 	lib/elementary/efl_ui_grid_static.c \
 	lib/elementary/efl_ui_grid_private.h \
 	lib/elementary/efl_ui_text.c \
+	lib/elementary/efl_ui_focus_manager.c \
 	$(NULL)
 
 
@@ -1347,6 +1349,10 @@ tests_elementary_elm_suite_SOURCES = \
 	tests/elementary/elm_code_test_widget_text.c \
 	tests/elementary/elm_code_test_widget_selection.c \
 	tests/elementary/elm_code_test_widget_undo.c
+	tests/elementary/elm_test_focus.c \
+	tests/elementary/elm_test_plug.c
+
+tests/elementary/tests_elementary_elm_suite-elm_test_focus.$(OBJEXT): tests/elementary/focus_test.eo.c tests/elementary/focus_test.eo.h
 
 tests_elementary_elm_suite_CPPFLAGS = \
 	-DTESTS_BUILD_DIR=\"${top_builddir}/src/tests/elementary\" \

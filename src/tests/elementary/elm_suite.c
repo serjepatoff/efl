@@ -71,6 +71,7 @@ static const Efl_Test_Case etc[] = {
   { "elm_slideshow", elm_test_slideshow},
   { "elm_spinner", elm_test_spinner},
   { "elm_plug", elm_test_plug},
+  { "elm_focus", elm_test_focus},
   { NULL, NULL }
 };
 

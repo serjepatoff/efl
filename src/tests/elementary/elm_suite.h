@@ -68,5 +68,6 @@ void elm_test_panes(TCase *tc);
 void elm_test_slideshow(TCase *tc);
 void elm_test_spinner(TCase *tc);
 void elm_test_plug(TCase *tc);
+void elm_test_focus(TCase *tc);
 
 #endif /* _ELM_SUITE_H */

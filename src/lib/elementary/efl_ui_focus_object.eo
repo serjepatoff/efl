@@ -1,0 +1,20 @@
+class Efl.Ui.Focus.Object(Eo.Base) {
+    methods {
+        @property focus {
+            [[True if this object currently has focus]]
+            values {
+                focus : bool;
+            }
+        }
+        @property focusable {
+            [[Flag to show if the object wants focus at all]]
+            values {
+                focus : bool;
+            }
+        }
+    }
+    events {
+        focus,in;
+        focus,out;
+    }
+}

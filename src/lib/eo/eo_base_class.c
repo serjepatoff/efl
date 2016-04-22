@@ -640,6 +640,15 @@ _eo_base_loop_get(Eo *obj EINA_UNUSED, Eo_Base_Data *pd)
    return NULL;
 }
 
+
+EOLIAN static Eo_Base *
+_eo_base_interface_get(Eo *obj, Eo_Base_Data *pd, Eo_Base *interface)
+{
+   if (pd->parent) return eo_interface_get(pd->parent, interface);
+   return NULL;
+}
+
+
 /* Children accessor */
 typedef struct _Eo_Children_Iterator Eo_Children_Iterator;
 struct _Eo_Children_Iterator

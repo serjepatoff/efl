@@ -155,6 +155,13 @@ abstract Eo.Base ()
             obj: Eo.Base *; [[ XXX: this should be Efl.Loop *; ]]
          }
       }
+      interface_get {
+        [[Searches for the next appearance of the given class identifier up in the object tree]]
+        params {
+          interface : Eo.Base*; [[The class identifier to search for]]
+        }
+        return : Eo.Base*;
+      }
       constructor {
          [[Call the object's constructor.
 

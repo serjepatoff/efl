@@ -5,6 +5,10 @@
 #include "evas_cs2_private.h"
 #endif
 
+#include "evas_image_private.h"
+#include "evas_polygon_private.h"
+#include "evas_vg_private.h"
+
 #define MY_CLASS EVAS_CANVAS_CLASS
 
 #ifdef LKDEBUG
@@ -709,6 +713,37 @@ EAPI void
 evas_language_reinit(void)
 {
    evas_common_language_reinit();
+}
+
+EAPI void
+_evas_canvas_image_data_reset(Evas *e)
+{
+   Evas_Public_Data *e = eo_data_scope_get(e, MY_CLASS);
+   Evas_Layer *lay;
+
+   EINA_INLIST_FOREACH(e->layers, lay)
+     {
+        Evas_Object_Protected_Data *o;
+        EINA_INLIST_FOREACH(lay->objects, o)
+          {
+             if (o->delete_me) continue;
+
+#define CHECK(TYPE, STRUCT) \
+             if (eo_isa(o->obj, TYPE))
+               {
+                  STRUCT *data = eo_data_scope_get(eo_obj, TYPE);
+
+                  data->engine_info = NULL;
+               }
+             CHECK(EVAS_IMAGE_CLASS, Evas_Image_Data)
+             else CHECK(EVAS_VG_CLASS, Evas_VG_Data)
+             else CHECK(EFL_CANVAS_POLYGON_CLASS, Efl_Canvas_Polygon_Data)
+             else CHECK(EVAS_CANVAS3D_TEXTURE_CLASS, Evas_Canvas3D_Texture_Data)
+             else CHECK(EFL_CANVAS_SCENE3D_CLASS, Evas_Image_Data)
+             else CHECK(EFL_CANVAS_IMAGE_CLASS, Evas_Image_Data)
+#undef CHECK
+          }
+     }
 }
 
 #include "canvas/evas_canvas.eo.c"

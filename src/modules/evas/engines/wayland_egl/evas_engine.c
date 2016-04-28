@@ -726,8 +726,12 @@ eng_setup(Evas *evas, void *info)
                  (ob->info->info.screen != ob->screen) ||
                  (ob->info->info.destination_alpha != ob->alpha))
                {
-                  ob->gl_context->references++;
                   gl_wins--;
+                  if (ob->info->info.display != ob->disp)
+                    {
+                       eng_window_free(re->generic.software.ob);
+                       re->generic.software.ob = NULL;
+                    }
 
                   ob = eng_window_new(evas, inf, epd->output.w, epd->output.h, swap_mode);
                   if (!ob) goto ob_err;
@@ -737,7 +741,6 @@ eng_setup(Evas *evas, void *info)
                   evas_render_engine_software_generic_update(&re->generic.software, ob,
                                                              epd->output.w, epd->output.h);
                   gl_wins++;
-                  eng_get_ob(re)->gl_context->references--;
                }
              else if ((ob->w != epd->output.w) || (ob->h != epd->output.h) ||
                       (ob->info->info.rotation != ob->rot))

@@ -30,7 +30,8 @@
 # endif
 #endif /* ! _WIN32 */
 
-EAPI void _evas_canvas_image_data_reset(Evas *e);
+extern EAPI Eina_List *_evas_canvas_image_data_unset(Evas *eo_e);
+extern EAPI void _evas_canvas_image_data_regenerate(Eina_List *list);
 
 /* local function prototypes */
 static void _ecore_evas_wl_move_resize(Ecore_Evas *ee, int x, int y, int w, int h);
@@ -119,6 +120,16 @@ static Ecore_Evas_Engine_Func _ecore_wl_engine_func =
 
 /* external variables */
 
+void
+_ee_egl_display_unset(Ecore_Evas *ee)
+{
+   Evas_Engine_Info_Wayland_Egl *einfo;
+
+   einfo = (Evas_Engine_Info_Wayland_Egl *)evas_engine_info_get(ee->evas);
+   einfo->info.display = NULL;
+   evas_engine_info_set(ee->evas, (Evas_Engine_Info *)einfo);
+}
+
 static Eina_Bool
 _ee_cb_sync_done(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
 {
@@ -133,16 +144,21 @@ _ee_cb_sync_done(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
 
    if ((einfo = (Evas_Engine_Info_Wayland_Egl *)evas_engine_info_get(ee->evas)))
      {
-        Eina_Bool reset = einfo->info.display != ecore_wl2_display_get(wdata->display);
+        Eina_List *l = NULL;
         einfo->info.display = ecore_wl2_display_get(wdata->display);
         einfo->info.destination_alpha = EINA_TRUE;
         einfo->info.rotation = ee->rotation;
         einfo->info.surface = ecore_wl2_window_surface_get(wdata->win);
 
+        if (wdata->reset_pending)
+          {
+             l = _evas_canvas_image_data_unset(ecore_evas_get(ee));
+             ecore_evas_manual_render_set(ee, 0);
+          }
         if (evas_engine_info_set(ee->evas, (Evas_Engine_Info *)einfo))
           {
-             if (reset)
-               _evas_canvas_image_data_reset(ecore_evas_get(ee));
+             if (wdata->reset_pending)
+               _evas_canvas_image_data_regenerate(l);
           }
         else
           ERR("Failed to set Evas Engine Info for '%s'", ee->driver);
@@ -360,6 +376,7 @@ ecore_evas_wayland_egl_new_internal(const char *disp_name, unsigned int parent,
    wdata->sync_done = EINA_FALSE;
    wdata->parent = p;
    wdata->display = ewd;
+   wdata->display_unset = _ee_egl_display_unset;
    wdata->win = ecore_wl2_window_new(ewd, p, x, y, w + fw, h + fh);
    ee->prop.window = ecore_wl2_window_id_get(wdata->win);
 

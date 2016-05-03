@@ -131,6 +131,7 @@ _ee_cb_sync_done(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
 
    if ((einfo = (Evas_Engine_Info_Wayland_Shm *)evas_engine_info_get(ee->evas)))
      {
+        ecore_evas_manual_render_set(ee, 0);
         einfo->info.wl_disp = ecore_wl2_display_get(wdata->display);
         einfo->info.wl_dmabuf = ecore_wl2_display_dmabuf_get(wdata->display);
         einfo->info.wl_shm = ecore_wl2_display_shm_get(wdata->display);

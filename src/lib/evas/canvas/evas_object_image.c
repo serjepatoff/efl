@@ -1119,7 +1119,8 @@ _evas_canvas_image_cache_flush(Eo *eo_e EINA_UNUSED, Evas_Public_Data *e)
 {
    evas_canvas_async_block(e);
    evas_render_rendering_wait(e);
-   e->engine.func->image_cache_flush(e->engine.data.output);
+   if (e->engine.data.output)
+     e->engine.func->image_cache_flush(e->engine.data.output);
 }
 
 EOLIAN void

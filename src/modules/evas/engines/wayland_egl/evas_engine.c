@@ -727,10 +727,12 @@ eng_setup(Evas *evas, void *info)
                  (ob->info->info.destination_alpha != ob->alpha))
                {
                   gl_wins--;
-                  if (ob->info->info.display != ob->disp)
+                  if (!ob->info->info.display)
                     {
                        eng_window_free(re->generic.software.ob);
                        re->generic.software.ob = NULL;
+                       epd->engine.data.output = NULL;
+                       goto ob_err;
                     }
 
                   ob = eng_window_new(evas, inf, epd->output.w, epd->output.h, swap_mode);

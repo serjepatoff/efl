@@ -8,6 +8,12 @@ static EGLContext context = EGL_NO_CONTEXT;
 static struct wl_display *display = NULL;
 static int win_count = 0;
 
+void *
+eng_display_get(void)
+{
+   return display;
+}
+
 Outbuf *
 eng_window_new(Evas *evas, Evas_Engine_Info_Wayland_Egl *einfo, int w, int h, Render_Engine_Swap_Mode swap_mode)
 {

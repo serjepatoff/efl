@@ -301,7 +301,7 @@ static void
 _begin_recovery_maybe(Ecore_Wl2_Display *ewd)
 {
    ERR("Wayland Socket Error: %s", strerror(errno));
-   if (ewd->wl.session_recovery && (errno == EPIPE))
+   if (ewd->wl.session_recovery)// && (errno == EPIPE))
      _recovery_timer_add(ewd);
    else
      _ecore_wl2_display_signal_exit();

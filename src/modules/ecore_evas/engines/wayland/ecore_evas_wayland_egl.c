@@ -124,9 +124,12 @@ void
 _ee_egl_display_unset(Ecore_Evas *ee)
 {
    Evas_Engine_Info_Wayland_Egl *einfo;
+   Ecore_Evas_Engine_Wl_Data *wdata;
 
    einfo = (Evas_Engine_Info_Wayland_Egl *)evas_engine_info_get(ee->evas);
    einfo->info.display = NULL;
+   wdata = ee->engine.data;
+   wdata->regen_objs = _evas_canvas_image_data_unset(ecore_evas_get(ee));
    evas_engine_info_set(ee->evas, (Evas_Engine_Info *)einfo);
 }
 
@@ -144,7 +147,6 @@ _ee_cb_sync_done(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
 
    if ((einfo = (Evas_Engine_Info_Wayland_Egl *)evas_engine_info_get(ee->evas)))
      {
-        Eina_List *l = NULL;
         einfo->info.display = ecore_wl2_display_get(wdata->display);
         einfo->info.destination_alpha = EINA_TRUE;
         einfo->info.rotation = ee->rotation;
@@ -152,16 +154,17 @@ _ee_cb_sync_done(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
 
         if (wdata->reset_pending)
           {
-             l = _evas_canvas_image_data_unset(ecore_evas_get(ee));
              ecore_evas_manual_render_set(ee, 0);
           }
         if (evas_engine_info_set(ee->evas, (Evas_Engine_Info *)einfo))
           {
              if (wdata->reset_pending)
-               _evas_canvas_image_data_regenerate(l);
+               _evas_canvas_image_data_regenerate(wdata->regen_objs);
+             wdata->regen_objs = NULL;
           }
         else
           ERR("Failed to set Evas Engine Info for '%s'", ee->driver);
+        wdata->reset_pending = 0;
      }
    else
      {

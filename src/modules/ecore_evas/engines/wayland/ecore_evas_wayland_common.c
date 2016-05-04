@@ -520,6 +520,8 @@ _ecore_evas_wl_common_free(Ecore_Evas *ee)
    wdata = ee->engine.data;
    ee_list = eina_list_remove(ee_list, ee);
 
+   eina_list_free(wdata->regen_objs);
+
    if (wdata->anim_callback) wl_callback_destroy(wdata->anim_callback);
    wdata->anim_callback = NULL;
 

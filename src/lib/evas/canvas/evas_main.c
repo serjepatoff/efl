@@ -751,7 +751,7 @@ _image_data_unset(Evas_Object_Protected_Data *obj, Eina_List **list)
           obj->layer->evas->engine.func->texture_free(obj->layer->evas->engine.data.output, data->engine_data))
    else return;
 #undef CHECK
-   evas_object_change(obj->object, obj);
+   evas_object_ref(obj->object);
    *list = eina_list_append(*list, obj->object);
 }
 
@@ -796,6 +796,7 @@ _image_data_regenerate(Evas_Object *eo_obj)
    Evas_Object_Protected_Data *obj;
 
    obj = eo_data_scope_get(eo_obj, EVAS_OBJECT_CLASS);
+   evas_object_change(eo_obj, obj);
 #define CHECK(TYPE, STRUCT, REGEN) \
    if (eo_isa(eo_obj, TYPE))\
      {\
@@ -816,7 +817,10 @@ _evas_canvas_image_data_regenerate(Eina_List *list)
    Evas_Object *eo_obj;
 
    EINA_LIST_FREE(list, eo_obj)
-     _image_data_regenerate(eo_obj);
+     {
+        _image_data_regenerate(eo_obj);
+        evas_object_unref(eo_obj);
+     }
 }
 
 #include "canvas/evas_canvas.eo.c"

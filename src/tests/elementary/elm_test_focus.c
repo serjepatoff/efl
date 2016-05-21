@@ -164,9 +164,37 @@ START_TEST(pos_check)
 }
 END_TEST
 
+START_TEST(redirect)
+{
+   elm_init(1, NULL);
+
+   Efl_Ui_Focus_Manager *m = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
+   Efl_Ui_Focus_Manager *m2 = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
+
+   printf("ONE\n");
+   Efl_Ui_Focus_Object *one = eo_add(FOCUS_TEST_CLASS, m2);
+   eo_id_set(one, "one");
+   Q(one, 0, 0, 20, 20)
+
+   printf("TWO\n");
+   Efl_Ui_Focus_Object *two = eo_add(FOCUS_TEST_CLASS, m2);
+   eo_id_set(two, "two");
+   Q(two, 40, 0, 20, 20)
+
+   efl_ui_focus_object_focus_set(one, EINA_TRUE);
+   efl_ui_focus_manager_redirect_set(m, m2);
+
+   ck_assert_ptr_eq(efl_ui_focus_manager_move(m, EFL_UI_FOCUS_DIRECTION_RIGHT), two);
+
+   elm_shutdown();
+}
+END_TEST
+
+
 void elm_test_focus(TCase *tc)
 {
     tcase_add_test(tc, focus_register_twice);
     tcase_add_test(tc, focus_unregister_twice);
     tcase_add_test(tc, pos_check);
+    tcase_add_test(tc, redirect);
 }

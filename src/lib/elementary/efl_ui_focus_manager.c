@@ -568,7 +568,7 @@ _efl_ui_focus_manager_redirect_set(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Dat
 
    pd->redirect = redirect;
 
-   if (!pd->redirect)
+   if (pd->redirect)
      eo_ref(pd->redirect);
 }
 

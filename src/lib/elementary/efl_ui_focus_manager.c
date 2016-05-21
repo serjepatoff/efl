@@ -28,6 +28,7 @@ typedef struct _Node Node;
 struct _Node {
     Efl_Ui_Focus_Object *focusable;
     Node *directions[NODE_DIRECTIONS_COUNT];
+    Efl_Ui_Focus_Manager *manager;
 };
 
 typedef struct {
@@ -58,13 +59,14 @@ _complement(Efl_Ui_Focus_Direction dir)
  * Create a new node
  */
 static Node*
-node_new(Efl_Ui_Focus_Object *focusable)
+node_new(Efl_Ui_Focus_Object *focusable, Efl_Ui_Focus_Manager *manager)
 {
     Node *node;
 
     node = calloc(1, sizeof(Node));
 
     node->focusable = focusable;
+    node->manager = manager;
 
     return node;
 }
@@ -499,7 +501,7 @@ _efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Obje
         return EINA_FALSE;
      }
 
-   node = node_new(child);
+   node = node_new(child, obj);
    eina_hash_add(pd->node_hash, &child, node);
 
    //mark dirty
@@ -513,15 +515,13 @@ _efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Obje
 
 
 EOLIAN static void
-_efl_ui_focus_manager_unregister(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Object *child)
+_efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Evas_Object *child)
 {
    Node *node;
 
    node = node_get(pd, child);
 
    if (!node) return;
-
-   eo_event_callback_array_del(child, focusable_node(), obj);
 
    //remove the object from the stack if it hasnt dont that until now
    //after this its not at the top anymore
@@ -575,10 +575,19 @@ _efl_ui_focus_manager_redirect_get(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Dat
    return pd->redirect;
 }
 
+static void
+_free_node(void *data)
+{
+   Node *node = data;
+   eo_event_callback_array_del(node->focusable, focusable_node(), node->manager);
+
+   node_item_free(node);
+}
+
 EOLIAN static Eo_Base *
 _efl_ui_focus_manager_eo_base_constructor(Eo *obj, Efl_Ui_Focus_Manager_Data *pd)
 {
-   pd->node_hash = eina_hash_pointer_new((Eina_Free_Cb)node_item_free);
+   pd->node_hash = eina_hash_pointer_new(_free_node);
    return eo_constructor(eo_super(obj, MY_CLASS));
 }
 

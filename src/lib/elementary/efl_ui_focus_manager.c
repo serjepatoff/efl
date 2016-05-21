@@ -63,8 +63,6 @@ node_new(Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *focusable)
 
     node->focusable = focusable;
 
-    eina_hash_add(pd->node_hash, &focusable, node);
-
     return node;
 }
 
@@ -199,13 +197,11 @@ node_relink_middle(Efl_Ui_Focus_Manager_Data *pd, Node *child, Anchor anchor, Di
  * Free a node item and unlink this item from all direction
  */
 static void
-node_item_free(Efl_Ui_Focus_Manager_Data *pd, Node *item)
+node_item_free(Node *item)
 {
     for(int i = 0;i < NODE_DIRECTIONS_COUNT; i++){
         node_unlink(item, i);
     }
-
-    eina_hash_del_by_key(pd->node_hash, &item->focusable);
 
     free(item);
 }
@@ -501,6 +497,7 @@ _efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Obje
      }
 
    node = node_new(pd, child);
+   eina_hash_add(pd->node_hash, &child, node);
 
    //mark dirty
    dirty_add(pd, node);
@@ -533,7 +530,7 @@ _efl_ui_focus_manager_unregister(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Ob
    //remove from the dirty parts
    pd->dirty = eina_list_remove(pd->dirty, node);
 
-   node_item_free(pd, node);
+   eina_hash_del_by_key(pd->node_hash, &child);
 }
 
 EOLIAN static Elm_Widget*
@@ -575,11 +572,10 @@ _efl_ui_focus_manager_redirect_get(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Dat
    return pd->redirect;
 }
 
-
 EOLIAN static Eo_Base *
 _efl_ui_focus_manager_eo_base_constructor(Eo *obj, Efl_Ui_Focus_Manager_Data *pd)
 {
-   pd->node_hash = eina_hash_pointer_new(NULL);
+   pd->node_hash = eina_hash_pointer_new((Eina_Free_Cb)node_item_free);
    return eo_constructor(eo_super(obj, MY_CLASS));
 }
 
@@ -591,5 +587,18 @@ _efl_ui_focus_manager_eo_base_provider_find(Eo *obj, Efl_Ui_Focus_Manager_Data *
 
    return eo_provider_find(eo_super(obj, MY_CLASS), klass);
 }
+
+EOLIAN static void
+_efl_ui_focus_manager_eo_base_destructor(Eo *obj, Efl_Ui_Focus_Manager_Data *pd)
+{
+   eina_list_free(pd->focus_stack);
+   eina_list_free(pd->dirty);
+
+   eina_hash_free(pd->node_hash);
+
+   eo_destructor(eo_super(obj, MY_CLASS));
+}
+
+
 
 #include "efl_ui_focus_manager.eo.c"

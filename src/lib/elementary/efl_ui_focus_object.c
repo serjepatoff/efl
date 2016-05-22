@@ -39,22 +39,6 @@ _efl_ui_focus_object_focusable_get(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Object_Data
    return pd->focusable;
 }
 
-static Efl_Ui_Focus_Manager*
-_search_focus_manager(Eo *obj)
-{
-   Eo *search = obj;
-
-   while (search)
-     {
-        if (eo_isa(search, EFL_UI_FOCUS_MANAGER_CLASS))
-          {
-             return search;
-          }
-        search = eo_parent_get(search);
-     }
-   return NULL;
-}
-
 static void
 _efl_ui_focus_object_focusable_set(Eo *obj, Efl_Ui_Focus_Object_Data *pd, Eina_Bool focusable)
 {

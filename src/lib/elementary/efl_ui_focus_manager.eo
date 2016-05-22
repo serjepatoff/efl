@@ -11,7 +11,11 @@ enum Efl.Ui.Focus.Direction{
 class Efl.Ui.Focus.Manager (Eo.Base) {
     methods {
         move {
-            [[Move the focus into the given direction]]
+            [[Move the focus into the given direction
+
+              This call flushes all changes.
+              This means all changes between the last flush and now are computed
+            ]]
             params {
                 direction : Efl.Ui.Focus.Direction; [[The direction to move to]]
             }
@@ -40,6 +44,19 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
               Set it to $null once nothing should be redirected anymore.]]
             values {
                 redirect : Efl.Ui.Focus.Manager*;
+            }
+        }
+        @property border_elements {
+            [[The list of elements which are at the border of the graph
+              This means one of the relations right,left or down,up are not set.
+
+              This call flushes all changes. see @Efl.Ui.Focus.Manager.move
+            ]]
+            get {
+                [[Get the list of border elements.]]
+            }
+            values {
+                border_elements : iterator<Efl.Ui.Focus.Manager*>*;
             }
         }
     }

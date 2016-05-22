@@ -608,6 +608,65 @@ _efl_ui_focus_manager_eo_base_destructor(Eo *obj, Efl_Ui_Focus_Manager_Data *pd)
    eo_destructor(eo_super(obj, MY_CLASS));
 }
 
+typedef struct {
+   Eina_Iterator iterator;
+   Eina_Iterator *real_iterator;
+   Efl_Ui_Focus_Manager *object;
+} Border_Elements_Iterator;
+
+static Eina_Bool
+_iterator_next(Border_Elements_Iterator *it, void **data)
+{
+   Node *node;
+
+   while(eina_iterator_next(it->real_iterator, (void**)&node))
+     {
+        for(int i = 0 ;i < NODE_DIRECTIONS_COUNT; i++)
+          {
+             if (!node->directions[i])
+               {
+                  *data = node->focusable;
+                  return EINA_TRUE;
+               }
+          }
+     }
+   return EINA_FALSE;
+}
+
+static Elm_Layout *
+_iterator_get_container(Border_Elements_Iterator *it)
+{
+   return it->object;
+}
+
+static void
+_iterator_free(Border_Elements_Iterator *it)
+{
+   eina_iterator_free(it->real_iterator);
+   free(it);
+}
+
+EOLIAN static Eina_Iterator*
+_efl_ui_focus_manager_border_elements_get(Eo *obj, Efl_Ui_Focus_Manager_Data *pd)
+{
+   Border_Elements_Iterator *it;
+
+   dirty_flush(pd);
+
+   it = calloc(1, sizeof(Border_Elements_Iterator));
+
+   EINA_MAGIC_SET(&it->iterator, EINA_MAGIC_ITERATOR);
+
+   it->real_iterator = eina_hash_iterator_data_new(pd->node_hash);
+   it->iterator.version = EINA_ITERATOR_VERSION;
+   it->iterator.next = FUNC_ITERATOR_NEXT(_iterator_next);
+   it->iterator.get_container = FUNC_ITERATOR_GET_CONTAINER(_iterator_get_container);
+   it->iterator.free = FUNC_ITERATOR_FREE(_iterator_free);
+   it->object = obj;
+
+   return (Eina_Iterator*) it;
+}
+
 
 
 #include "efl_ui_focus_manager.eo.c"

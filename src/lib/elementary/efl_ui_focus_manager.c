@@ -415,7 +415,7 @@ _node_new_geometery_cb(void *data, const Eo_Event *event)
    Node *node;
    FOCUS_DATA(data)
 
-   node = node_get(pd, event->obj);
+   node = node_get(pd, event->object);
 
    dirty_add(pd, node);
 
@@ -429,11 +429,11 @@ _focus_in_cb(void *data, const Eo_Event *event)
    Node *old_focus;
    FOCUS_DATA(data)
 
-   node = node_get(pd, event->obj);
+   node = node_get(pd, event->object);
 
    old_focus = eina_list_last_data_get(pd->focus_stack);
 
-   if (old_focus && old_focus->focusable == event->obj)
+   if (old_focus && old_focus->focusable == event->object)
      {
         //dont do anything here, this means another node unfocused while at the top of stack
         return EO_CALLBACK_CONTINUE;
@@ -458,7 +458,7 @@ _focus_out_cb(void *data, const Eo_Event *event)
 
    old_focus = eina_list_last_data_get(pd->focus_stack);
 
-   if (old_focus->focusable == event->obj)
+   if (old_focus->focusable == event->object)
      {
         Node *new_focus;
 

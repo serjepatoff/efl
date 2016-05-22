@@ -55,6 +55,10 @@ _focus_test_eo_base_constructor(Eo *obj, Focus_Test_Data *pd)
 
 #include "focus_test.eo.c"
 
+#define Q(o,x,y,w,h) \
+   efl_gfx_position_set(o, x, y); \
+   efl_gfx_size_set(o, w, h);
+
 START_TEST(focus_unregister_twice)
 {
    elm_init(1, NULL);
@@ -96,41 +100,44 @@ START_TEST(focus_register_twice)
 }
 END_TEST
 
+static void
+_setup_cross(Efl_Ui_Focus_Object **middle, Efl_Ui_Focus_Object **south,
+  Efl_Ui_Focus_Object **north, Efl_Ui_Focus_Object **east, Efl_Ui_Focus_Object **west,
+  Efl_Ui_Focus_Manager *m)
+  {
+
+
+   *middle = eo_add(FOCUS_TEST_CLASS, m);
+   eo_id_set(*middle, "middle");
+   Q(*middle, 40, 40, 20, 20)
+
+   *south = eo_add(FOCUS_TEST_CLASS, m);
+   eo_id_set(*south, "south");
+   Q(*south, 40, 80, 20, 20)
+
+   *north = eo_add(FOCUS_TEST_CLASS, m);
+   eo_id_set(*north, "north");
+   Q(*north, 40, 0, 20, 20)
+
+   *east = eo_add(FOCUS_TEST_CLASS, m);
+   eo_id_set(*east, "east");
+   Q(*east, 80, 40, 20, 20)
+
+   *west = eo_add(FOCUS_TEST_CLASS, m);
+   eo_id_set(*west, "west");
+   Q(*west, 0, 40, 20, 20)
+  }
+
 START_TEST(pos_check)
 {
+   Efl_Ui_Focus_Manager *m;
+   Efl_Ui_Focus_Object *middle, *east, *west, *north, *south;
+
    elm_init(1, NULL);
 
-#define Q(o,x,y,w,h) \
-   efl_gfx_position_set(o, x, y); \
-   efl_gfx_size_set(o, w, h);
+   m = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
 
-   Efl_Ui_Focus_Manager *m = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
-
-   Efl_Ui_Focus_Object *middle = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(middle, "middle");
-   Q(middle, 40, 40, 20, 20)
-
-   printf("SOUTH\n");
-   Efl_Ui_Focus_Object *south = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(south, "south");
-   Q(south, 40, 80, 20, 20)
-
-   printf("NORTH\n");
-   Efl_Ui_Focus_Object *north = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(north, "north");
-   Q(north, 40, 0, 20, 20)
-
-   printf("EAST\n");
-   Efl_Ui_Focus_Object *east = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(east, "east");
-   Q(east, 80, 40, 20, 20)
-
-   printf("WEST\n");
-   Efl_Ui_Focus_Object *west = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(west, "west");
-   Q(west, 0, 40, 20, 20)
-
-
+   _setup_cross(&middle, &south, &north, &east, &west, m);
 
 #define CHECK(obj, r,l,u,d) \
    efl_ui_focus_object_focus_set(obj, EINA_TRUE); \
@@ -179,7 +186,7 @@ START_TEST(redirect)
    printf("TWO\n");
    Efl_Ui_Focus_Object *two = eo_add(FOCUS_TEST_CLASS, m2);
    eo_id_set(two, "two");
-   Q(two, 40, 0, 20, 20)
+   Q(two, 20, 0, 20, 20)
 
    efl_ui_focus_object_focus_set(one, EINA_TRUE);
    efl_ui_focus_manager_redirect_set(m, m2);
@@ -190,6 +197,37 @@ START_TEST(redirect)
 }
 END_TEST
 
+START_TEST(border_check)
+{
+   Efl_Ui_Focus_Manager *m;
+   Efl_Ui_Focus_Object *middle, *east, *west, *north, *south;
+   Eina_List *list = NULL;
+   Eina_Iterator *iter;
+   Efl_Ui_Focus_Object *obj;
+
+   elm_init(1, NULL);
+
+   m = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
+
+   _setup_cross(&middle, &south, &north, &east, &west, m);
+
+   iter = efl_ui_focus_manager_border_elements_get(m);
+
+   EINA_ITERATOR_FOREACH(iter, obj)
+     {
+        list = eina_list_append(list, obj);
+     }
+
+   ck_assert(eina_list_data_find(list, east) == east);
+   ck_assert(eina_list_data_find(list, north) == north);
+   ck_assert(eina_list_data_find(list, west) == west);
+   ck_assert(eina_list_data_find(list, east) == east);
+   ck_assert(eina_list_data_find(list, middle) == NULL);
+   ck_assert(eina_list_count(list) == 4);
+
+   elm_shutdown();
+}
+END_TEST
 
 void elm_test_focus(TCase *tc)
 {
@@ -197,4 +235,5 @@ void elm_test_focus(TCase *tc)
     tcase_add_test(tc, focus_unregister_twice);
     tcase_add_test(tc, pos_check);
     tcase_add_test(tc, redirect);
+    tcase_add_test(tc, border_check);
 }

@@ -76,9 +76,9 @@ START_TEST(focus_unregister_twice)
 
    efl_ui_focus_object_focusable_set(r2, EINA_FALSE);
 
-   eo_del(r2);
-   eo_del(r1);
-   eo_del(m);
+   eo_unref(r2);
+   eo_unref(r1);
+   eo_unref(m);
 
    elm_shutdown();
 }
@@ -93,8 +93,8 @@ START_TEST(focus_register_twice)
 
    fail_if(efl_ui_focus_manager_register(m, r1));
 
-   eo_del(r1);
-   eo_del(m);
+   eo_unref(r1);
+   eo_unref(m);
 
    elm_shutdown();
 }
@@ -108,23 +108,23 @@ _setup_cross(Efl_Ui_Focus_Object **middle, Efl_Ui_Focus_Object **south,
 
 
    *middle = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(*middle, "middle");
+   eo_name_set(*middle, "middle");
    Q(*middle, 40, 40, 20, 20)
 
    *south = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(*south, "south");
+   eo_name_set(*south, "south");
    Q(*south, 40, 80, 20, 20)
 
    *north = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(*north, "north");
+   eo_name_set(*north, "north");
    Q(*north, 40, 0, 20, 20)
 
    *east = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(*east, "east");
+   eo_name_set(*east, "east");
    Q(*east, 80, 40, 20, 20)
 
    *west = eo_add(FOCUS_TEST_CLASS, m);
-   eo_id_set(*west, "west");
+   eo_name_set(*west, "west");
    Q(*west, 0, 40, 20, 20)
   }
 
@@ -180,12 +180,12 @@ START_TEST(redirect)
 
    printf("ONE\n");
    Efl_Ui_Focus_Object *one = eo_add(FOCUS_TEST_CLASS, m2);
-   eo_id_set(one, "one");
+   eo_name_set(one, "one");
    Q(one, 0, 0, 20, 20)
 
    printf("TWO\n");
    Efl_Ui_Focus_Object *two = eo_add(FOCUS_TEST_CLASS, m2);
-   eo_id_set(two, "two");
+   eo_name_set(two, "two");
    Q(two, 20, 0, 20, 20)
 
    efl_ui_focus_object_focus_set(one, EINA_TRUE);

@@ -71,7 +71,7 @@ _elm_inwin_evas_object_smart_add(Eo *obj, void *_pd EINA_UNUSED)
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
    elm_widget_sub_object_parent_add(obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
    elm_widget_highlight_ignore_set(obj, EINA_TRUE);
 
    evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);

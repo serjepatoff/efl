@@ -353,7 +353,7 @@ _drag_start(void *data,
             const char *emission EINA_UNUSED,
             const char *source EINA_UNUSED)
 {
-   if (!elm_widget_focus_get(data))
+   if (!efl_ui_focus_object_focus_get(data))
      elm_object_focus_set(data, EINA_TRUE);
    _slider_update(data, EINA_TRUE);
    eo_event_callback_call(data, ELM_SLIDER_EVENT_SLIDER_DRAG_START, NULL);
@@ -455,7 +455,7 @@ _popup_hide(void *data,
 
    if (sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ALWAYS) return;
    if ((sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ON_FOCUS) &&
-       elm_widget_focus_get(data))
+       efl_ui_focus_object_focus_get(data))
      return;
 
    edje_object_signal_emit(sd->popup, "popup,hide", "elm"); // XXX: for compat
@@ -477,7 +477,7 @@ _popup_hide_done(void *data,
    ELM_SLIDER_DATA_GET(data, sd);
    if (sd->popup)
      {
-        if (!((elm_widget_focus_get(data)) &&
+        if (!((efl_ui_focus_object_focus_get(data)) &&
               (sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ON_FOCUS)))
           {
              evas_object_hide(sd->popup);
@@ -486,7 +486,7 @@ _popup_hide_done(void *data,
      }
    if (sd->popup2)
      {
-        if (!((elm_widget_focus_get(data)) &&
+        if (!((efl_ui_focus_object_focus_get(data)) &&
               (sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ON_FOCUS)))
           {
              evas_object_hide(sd->popup2);
@@ -938,7 +938,7 @@ _spacer_down_cb(void *data,
 
    _move_knob_on_mouse(data, button_x, button_y);
 
-   if (!elm_widget_focus_get(data))
+   if (!efl_ui_focus_object_focus_get(data))
      elm_object_focus_set(data, EINA_TRUE);
    _slider_update(data, EINA_TRUE);
    eo_event_callback_call(data, ELM_SLIDER_EVENT_SLIDER_DRAG_START, NULL);
@@ -1181,7 +1181,7 @@ _elm_slider_evas_object_smart_add(Eo *obj, Elm_Slider_Data *priv)
 
    evas_object_event_callback_add(obj, EVAS_CALLBACK_SHOW, _on_show, NULL);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    _elm_access_object_register(obj, wd->resize_obj);
    _elm_access_text_set
@@ -1605,9 +1605,9 @@ _elm_slider_elm_widget_on_focus(Eo *obj, Elm_Slider_Data *sd EINA_UNUSED, Elm_Ob
 
    int_ret = elm_obj_widget_on_focus(eo_super(obj, MY_CLASS), NULL);
 
-   if ((sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ON_FOCUS) && elm_widget_focus_get(obj))
+   if ((sd->indicator_visible_mode == ELM_SLIDER_INDICATOR_VISIBLE_MODE_ON_FOCUS) && efl_ui_focus_object_focus_get(obj))
      _popup_show(obj, NULL, NULL, NULL);
-   else if (!elm_widget_focus_get(obj))
+   else if (!efl_ui_focus_object_focus_get(obj))
      _popup_hide(obj, NULL, NULL, NULL);
 
    return int_ret;

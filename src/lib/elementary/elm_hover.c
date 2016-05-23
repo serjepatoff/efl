@@ -600,7 +600,7 @@ _elm_hover_evas_object_smart_add(Eo *obj, Elm_Hover_Data *priv)
    elm_layout_content_set(obj, "elm.swallow.offset", priv->offset);
    elm_layout_content_set(obj, "elm.swallow.size", priv->size);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 }
 
 EOLIAN static void

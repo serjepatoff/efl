@@ -444,7 +444,7 @@ _elm_notify_evas_object_smart_add(Eo *obj, Elm_Notify_Data *priv)
    edje_object_signal_callback_add
       (priv->notify, "elm,action,hide,finished", "elm", _hide_finished_cb, obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
    elm_notify_align_set(obj, 0.5, 0.0);
 }
 

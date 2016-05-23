@@ -172,7 +172,7 @@ _elm_frame_evas_object_smart_add(Eo *obj, Elm_Frame_Data *_pd EINA_UNUSED)
      (wd->resize_obj, "elm,action,click", "elm",
      _on_frame_clicked, obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    if (!elm_layout_theme_set(obj, "frame", "base", elm_widget_style_get(obj)))
      CRI("Failed to set layout!");

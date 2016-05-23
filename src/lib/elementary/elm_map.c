@@ -3897,7 +3897,7 @@ _elm_map_elm_widget_on_focus(Eo *obj, Elm_Map_Data *_pd EINA_UNUSED, Elm_Object_
    int_ret = elm_obj_widget_on_focus(eo_super(obj, MY_CLASS), NULL);
    if (!int_ret) return EINA_FALSE;
 
-   if (elm_widget_focus_get(obj))
+   if (efl_ui_focus_object_focus_get(obj))
      {
         edje_object_signal_emit
           (wd->resize_obj, "elm,action,focus", "elm");
@@ -4057,7 +4057,7 @@ _elm_map_evas_object_smart_add(Eo *obj, Elm_Map_Data *priv)
    evas_object_show(priv->hit_rect);
    evas_object_repeat_events_set(priv->hit_rect, EINA_TRUE);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    evas_object_event_callback_add
      (obj, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, obj);

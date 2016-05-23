@@ -938,9 +938,9 @@ _item_new(Elm_Popup_Item_Data *it)
                                        _item_select_cb, it);
         evas_object_size_hint_align_set(VIEW(it), EVAS_HINT_FILL, EVAS_HINT_FILL);
         eo_event_callback_add
-              (VIEW(it), ELM_WIDGET_EVENT_FOCUSED, _item_focused_cb, it);
+              (VIEW(it), EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, _item_focused_cb, it);
         eo_event_callback_add
-              (VIEW(it), ELM_WIDGET_EVENT_UNFOCUSED, _item_unfocused_cb, it);
+              (VIEW(it), EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, _item_unfocused_cb, it);
         evas_object_show(VIEW(it));
      }
 }
@@ -1557,8 +1557,8 @@ _elm_popup_evas_object_smart_add(Eo *obj, Elm_Popup_Data *priv)
    priv->content_text_wrap_type = ELM_WRAP_MIXED;
    eo_event_callback_array_add(priv->notify, _notify_cb(), obj);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
-   elm_widget_can_focus_set(priv->main_layout, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(priv->main_layout, EINA_TRUE);
 
    _populate_theme_scroll(priv);
 

@@ -409,7 +409,7 @@ _elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, 
    /* access */
    if (_elm_config->access_mode)
      {
-        if ((elm_widget_can_focus_get(cur)) ||
+        if ((efl_ui_focus_object_can_focus_get(cur)) ||
             (elm_widget_child_can_focus_get(cur)))
           {
              return elm_widget_focus_next_get(cur, dir, next, next_item);
@@ -419,7 +419,7 @@ _elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, 
      }
 
    /* Try focus cycle in subitem */
-   if ((elm_widget_can_focus_get(cur)) ||
+   if ((efl_ui_focus_object_can_focus_get(cur)) ||
        (elm_widget_child_can_focus_get(cur)))
      {
         Eina_Bool ret = EINA_FALSE;
@@ -450,7 +450,7 @@ _elm_scroller_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Scroller_Data *sd, 
    /* Return */
    *next = (Evas_Object *)obj;
 
-   return !elm_widget_focus_get(obj);
+   return !efl_ui_focus_object_focus_get(obj);
 }
 
 EOLIAN static Eina_Bool
@@ -471,7 +471,7 @@ _elm_scroller_elm_widget_focus_direction(Eo *obj, Elm_Scroller_Data *sd, const E
    /* access */
    if (_elm_config->access_mode)
      {
-        if ((elm_widget_can_focus_get(cur)) ||
+        if ((efl_ui_focus_object_can_focus_get(cur)) ||
             (elm_widget_child_can_focus_get(cur)))
           {
              return elm_widget_focus_direction_get(cur, base, degree, direction, direction_item, weight);
@@ -481,7 +481,7 @@ _elm_scroller_elm_widget_focus_direction(Eo *obj, Elm_Scroller_Data *sd, const E
      }
 
    /* Try focus cycle in subitem */
-   if ((elm_widget_can_focus_get(cur)) ||
+   if ((efl_ui_focus_object_can_focus_get(cur)) ||
        (elm_widget_child_can_focus_get(cur)))
      {
         Eina_Bool ret = EINA_FALSE;
@@ -512,7 +512,7 @@ _elm_scroller_elm_widget_focus_direction(Eo *obj, Elm_Scroller_Data *sd, const E
    /* Return */
    *direction = (Evas_Object *)obj;
 
-   return !elm_widget_focus_get(obj);
+   return !efl_ui_focus_object_focus_get(obj);
 }
 
 static void
@@ -867,7 +867,7 @@ _elm_scroller_evas_object_smart_add(Eo *obj, Elm_Scroller_Data *priv)
 
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
    elm_widget_sub_object_parent_add(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    if (!elm_layout_theme_set
        (obj, "scroller", "base", elm_widget_style_get(obj)))

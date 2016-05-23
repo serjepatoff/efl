@@ -20,36 +20,13 @@ struct Elm.Tooltip;
 struct Elm.Cursor;
 struct @extern Elm.Theme;
 
-abstract Elm.Widget (Evas.Object.Smart, Elm.Interface.Atspi_Accessible, Elm.Interface.Atspi_Component)
+abstract Elm.Widget (Evas.Object.Smart, Elm.Interface.Atspi_Accessible, Elm.Interface.Atspi_Component, Efl.Ui.Focus.Object)
 {
    legacy_prefix: elm_widget;
    eo_prefix: elm_obj_widget;
    event_prefix: elm_widget;
    data: Elm_Widget_Smart_Data;
    methods {
-      @property focus {
-         [[Whether an Elementary object has the focus or not.
-
-           Note that when you set focus to this object, if it can handle focus,
-           it will take the focus away from the one who had it previously and will,
-           for now on, be the one receiving input events. Unsetting focus will remove
-           the focus from this object, passing it back to the previous element in the
-           focus chain list.
-
-           Warning: Only visible object can get a focus. Call @Evas.Object.Smart.show
-           before calling this API, if you want to give a focus to the evas object.]]
-         set {
-           [[$true set the focus to the object,
-             $false unset the focus to the object.]]
-         }
-         get {
-            [[Return $true if the object is focused,
-              and $false if not (and on errors).]]
-         }
-         values {
-            focus: bool;
-         }
-      }
       @property drag_lock_y {
          set {
          }
@@ -179,29 +156,6 @@ abstract Elm.Widget (Evas.Object.Smart, Elm.Interface.Atspi_Accessible, Elm.Inte
             values {
                objs: const(list<Evas.Object*>)*; [[Chain of objects]]
             }
-         }
-      }
-      @property can_focus {
-         [[The ability for an Elementary object to be focused.
-
-           Unfocusable objects do nothing when programmatically
-           focused, being the nearest focusable parent object the one
-           really getting focus. Also, when they receive mouse input, they
-           will get the event, but not take away the focus from where it
-           was previously.
-
-           Note: Objects which are meant to be interacted with by input
-           events are created able to be focused, by default. All the
-           others are not.]]
-         set {
-         }
-         get {
-            [[Return $true if the object is allowed to be focused,
-              $false if not (and on errors).]]
-         }
-         values {
-            can_focus: bool; [[$true if the object can be focused,
-                               $false if not.]]
          }
       }
       @property highlight_in_theme {
@@ -868,11 +822,11 @@ abstract Elm.Widget (Evas.Object.Smart, Elm.Interface.Atspi_Accessible, Elm.Inte
       Elm.Interface.Atspi_Accessible.parent.get;
       Elm.Interface.Atspi_Accessible.attributes.get;
       Elm.Interface.Atspi_Component.focus_grab;
+      Efl.Ui.Focus.Object.focus;
+      Efl.Ui.Focus.Object.can_focus;
    }
    events {
       moved;
-      focused;
-      unfocused;
       language,changed;
       access,changed;
    }

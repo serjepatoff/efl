@@ -3279,13 +3279,13 @@ _elm_genlist_elm_widget_on_focus(Eo *obj, Elm_Genlist_Data *sd, Elm_Object_Item 
    int_ret = elm_obj_widget_on_focus(eo_super(obj, MY_CLASS), NULL);
    if (!int_ret) return EINA_FALSE;
 
-   if (elm_widget_focus_get(obj) && (sd->items) && (sd->selected) &&
+   if (efl_ui_focus_object_focus_get(obj) && (sd->items) && (sd->selected) &&
        (!sd->last_selected_item))
      {
         sd->last_selected_item = eina_list_data_get(sd->selected);
      }
 
-   if (elm_widget_focus_get(obj) && !sd->mouse_down)
+   if (efl_ui_focus_object_focus_get(obj) && !sd->mouse_down)
      {
         if (sd->last_focused_item)
           eo_it = sd->last_focused_item;
@@ -5543,7 +5543,7 @@ _elm_genlist_evas_object_smart_add(Eo *obj, Elm_Genlist_Data *priv)
    evas_object_show(priv->hit_rect);
    evas_object_repeat_events_set(priv->hit_rect, EINA_TRUE);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
    elm_widget_on_show_region_hook_set(obj, _show_region_hook, NULL);
 
    if (!elm_layout_theme_set
@@ -6012,7 +6012,7 @@ _elm_genlist_item_elm_widget_item_focus_set(Eo *eo_it, Elm_Gen_Item *it, Eina_Bo
         if (!elm_object_focus_get(obj))
           elm_object_focus_set(obj, EINA_TRUE);
 
-        if (!elm_widget_focus_get(obj))
+        if (!efl_ui_focus_object_focus_get(obj))
           return;
 
         if (eo_it != sd->focused_item)
@@ -6032,7 +6032,7 @@ _elm_genlist_item_elm_widget_item_focus_set(Eo *eo_it, Elm_Gen_Item *it, Eina_Bo
      }
    else
      {
-        if (!elm_widget_focus_get(obj))
+        if (!efl_ui_focus_object_focus_get(obj))
           return;
         _elm_genlist_item_unfocused(eo_it);
      }

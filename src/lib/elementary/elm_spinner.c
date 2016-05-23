@@ -622,7 +622,7 @@ _toggle_entry(Evas_Object *obj)
              elm_layout_signal_emit(obj, "elm,state,active", "elm");
              _entry_show(sd);
              elm_entry_select_all(sd->ent);
-             elm_widget_focus_set(sd->ent, EINA_TRUE);
+             efl_ui_focus_object_focus_set(sd->ent, EINA_TRUE);
              sd->entry_visible = EINA_TRUE;
           }
         elm_layout_signal_emit(obj, "elm,state,entry,active", "elm");
@@ -927,7 +927,7 @@ _elm_spinner_elm_widget_on_focus(Eo *obj, Elm_Spinner_Data *sd, Elm_Object_Item 
    int_ret = elm_obj_widget_on_focus(eo_super(obj, MY_CLASS), NULL);
    if (!int_ret) return EINA_FALSE;
 
-   if (!elm_widget_focus_get(obj))
+   if (!efl_ui_focus_object_focus_get(obj))
      {
         ELM_SAFE_FREE(sd->delay_change_timer, ecore_timer_del);
         ELM_SAFE_FREE(sd->spin_timer, ecore_timer_del);
@@ -1227,7 +1227,7 @@ _elm_spinner_evas_object_smart_add(Eo *obj, Elm_Spinner_Data *priv)
      (obj, "elm,action,entry,toggle", "*", _entry_toggle_cb, NULL);
 
    _label_write(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    elm_layout_sizing_eval(obj);
 

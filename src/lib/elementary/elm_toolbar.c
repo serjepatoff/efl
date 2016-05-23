@@ -753,7 +753,7 @@ _elm_toolbar_elm_widget_on_focus(Eo *obj, Elm_Toolbar_Data *sd, Elm_Object_Item 
    if (!int_ret) return EINA_FALSE;
    if (!sd->items) return EINA_FALSE;
 
-   if (elm_widget_focus_get(obj))
+   if (efl_ui_focus_object_focus_get(obj))
      {
         evas_object_focus_set(wd->resize_obj, EINA_TRUE);
         if (sd->mouse_down) return EINA_TRUE;
@@ -836,7 +836,7 @@ _elm_toolbar_item_elm_widget_item_focus_set(Eo *eo_it, Elm_Toolbar_Item_Data *it
         if (!elm_object_focus_get(obj))
           elm_object_focus_set(obj, EINA_TRUE);
 
-        if (!elm_widget_focus_get(obj))
+        if (!efl_ui_focus_object_focus_get(obj))
           return;
 
         if (eo_it != sd->focused_item)
@@ -848,7 +848,7 @@ _elm_toolbar_item_elm_widget_item_focus_set(Eo *eo_it, Elm_Toolbar_Item_Data *it
      }
    else
      {
-        if (!elm_widget_focus_get(obj))
+        if (!efl_ui_focus_object_focus_get(obj))
           return;
         if (eo_it)
           _elm_toolbar_item_unfocused(eo_it);
@@ -2835,7 +2835,7 @@ _elm_toolbar_evas_object_smart_add(Eo *obj, Elm_Toolbar_Data *priv)
    evas_object_show(priv->hit_rect);
    evas_object_repeat_events_set(priv->hit_rect, EINA_TRUE);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    elm_interface_scrollable_objects_set(obj, edje, priv->hit_rect);
 

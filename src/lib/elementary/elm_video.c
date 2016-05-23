@@ -253,7 +253,7 @@ _elm_video_evas_object_smart_add(Eo *obj, Elm_Video_Data *priv)
 
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
    elm_widget_sub_object_parent_add(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    priv->emotion = emotion_object_add(evas_object_evas_get(obj));
    emotion_object_init(priv->emotion, NULL);

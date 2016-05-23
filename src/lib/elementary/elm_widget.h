@@ -56,7 +56,7 @@
  *    // define this virtual function to handle it (e.g. to emit a
  *    // signal to an edje object)
  *
- *    if (elm_widget_focus_get(obj))
+ *    if (efl_ui_focus_object_focus_get(obj))
  *      {
  *         edje_object_signal_emit(sd->sub, "elm,action,focus", "elm");
  *         evas_object_focus_set(sd->sub, EINA_TRUE);
@@ -632,8 +632,6 @@ EAPI void             elm_widget_hover_object_set(Evas_Object *obj, Evas_Object 
 EAPI void             elm_widget_signal_emit(Evas_Object *obj, const char *emission, const char *source);
 EAPI void             elm_widget_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb func, void *data);
 EAPI void            *elm_widget_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb func);
-EAPI void             elm_widget_can_focus_set(Evas_Object *obj, Eina_Bool can_focus);
-EAPI Eina_Bool        elm_widget_can_focus_get(const Evas_Object *obj);
 EAPI Eina_Bool        elm_widget_child_can_focus_get(const Evas_Object *obj);
 EAPI Eina_List       *elm_widget_can_focus_child_list_get(const Evas_Object *obj);
 EAPI void             elm_widget_tree_unfocusable_set(Evas_Object *obj, Eina_Bool tree_unfocusable);
@@ -644,7 +642,6 @@ EAPI void             elm_widget_highlight_in_theme_set(Evas_Object *obj, Eina_B
 EAPI Eina_Bool        elm_widget_highlight_in_theme_get(const Evas_Object *obj);
 EAPI void             elm_widget_access_highlight_in_theme_set(Evas_Object *obj, Eina_Bool highlight);
 EAPI Eina_Bool        elm_widget_access_highlight_in_theme_get(const Evas_Object *obj);
-EAPI Eina_Bool        elm_widget_focus_get(const Evas_Object *obj);
 EAPI Eina_Bool        elm_widget_highlight_get(const Evas_Object *obj);
 EAPI Evas_Object     *elm_widget_focused_object_get(const Evas_Object *obj);
 EAPI Evas_Object     *elm_widget_top_get(const Evas_Object *obj);
@@ -671,7 +668,6 @@ EAPI void             elm_widget_focus_next_item_set(Evas_Object *obj, Elm_Objec
 EAPI Eina_Bool        elm_widget_focus_highlight_style_set(Evas_Object *obj, const char *style);
 EAPI const char      *elm_widget_focus_highlight_style_get(const Evas_Object *obj);
 EAPI void             elm_widget_parent_highlight_set(Evas_Object *obj, Eina_Bool highlighted);
-EAPI void             elm_widget_focus_set(Evas_Object *obj, Eina_Bool focus);
 EAPI void             elm_widget_focused_object_clear(Evas_Object *obj);
 EAPI Evas_Object     *elm_widget_parent_get(const Evas_Object *obj);
 EAPI Evas_Object     *elm_widget_parent2_get(const Evas_Object *obj);

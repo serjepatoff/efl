@@ -119,7 +119,7 @@ _elm_panes_elm_widget_focus_next(Eo *obj, Elm_Panes_Data *sd, Elm_Focus_Directio
      }
    else return EINA_FALSE;
 
-   i = elm_widget_focus_get(chain[1]);
+   i = efl_ui_focus_object_focus_get(chain[1]);
 
    if (elm_widget_focus_next_get(chain[i], dir, next, next_item)) return EINA_TRUE;
 
@@ -300,7 +300,7 @@ _elm_panes_evas_object_smart_add(Eo *obj, Elm_Panes_Data *_pd EINA_UNUSED)
    sd->left_min_relative_size = 0;
    _update_fixed_sides(obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    sd->event = evas_object_rectangle_add(evas_object_evas_get(obj));
    evas_object_color_set(sd->event, 0, 0, 0, 0);

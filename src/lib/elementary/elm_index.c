@@ -95,7 +95,7 @@ static void
 _access_index_register(Evas_Object *obj)
 {
    Evas_Object *ao;
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
    ao = _elm_access_edje_object_part_object_register
               (obj, elm_layout_edje_get(obj), "access");
    _elm_access_text_set
@@ -1100,7 +1100,7 @@ _elm_index_evas_object_smart_add(Eo *obj, Elm_Index_Data *priv)
      }
 
    elm_layout_sizing_eval(obj);
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    // ACCESS
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
@@ -1203,7 +1203,7 @@ _access_obj_process(Evas_Object *obj, Eina_Bool is_access)
    else
      {
         // opposition of  _access_index_register();
-        elm_widget_can_focus_set(obj, EINA_FALSE);
+        efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
         _elm_access_edje_object_part_object_unregister
              (obj, elm_layout_edje_get(obj), "access");
 

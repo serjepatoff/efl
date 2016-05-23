@@ -81,7 +81,7 @@ _elm_bubble_elm_widget_focus_next(Eo *obj, Elm_Bubble_Data *_pd EINA_UNUSED, Elm
 {
    Evas_Object *content;
    ELM_WIDGET_DATA_GET_OR_RETURN(obj, wd, EINA_FALSE);
-   if ((elm_widget_can_focus_get(obj)) &&
+   if ((efl_ui_focus_object_can_focus_get(obj)) &&
        (!wd->focused))
      {
         // ACCESS
@@ -183,7 +183,7 @@ _elm_bubble_evas_object_smart_add(Eo *obj, Elm_Bubble_Data *priv)
 
    priv->pos = ELM_BUBBLE_POS_TOP_LEFT; //default
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    evas_object_event_callback_add
      (wd->resize_obj, EVAS_CALLBACK_MOUSE_UP,
@@ -202,7 +202,7 @@ _elm_bubble_evas_object_smart_add(Eo *obj, Elm_Bubble_Data *priv)
    elm_layout_sizing_eval(obj);
 
    if (_elm_config->access_mode == ELM_ACCESS_MODE_ON)
-     elm_widget_can_focus_set(obj, EINA_TRUE);
+     efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 }
 
 EOLIAN static void
@@ -211,9 +211,9 @@ _elm_bubble_elm_widget_access(Eo *obj, Elm_Bubble_Data *_pd EINA_UNUSED, Eina_Bo
    ELM_BUBBLE_CHECK(obj);
 
    if (is_access)
-     elm_widget_can_focus_set(obj, EINA_TRUE);
+     efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
    else
-     elm_widget_can_focus_set(obj, EINA_FALSE);
+     efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 }
 
 EAPI Evas_Object *

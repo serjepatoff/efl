@@ -309,7 +309,7 @@ _elm_panel_elm_widget_focus_next(Eo *obj, Elm_Panel_Data *sd, Elm_Focus_Directio
 
    /* Return */
    *next = (Evas_Object *)obj;
-   return !elm_widget_focus_get(obj);
+   return !efl_ui_focus_object_focus_get(obj);
 }
 
 static void
@@ -485,7 +485,7 @@ _panel_toggle(void *data EINA_UNUSED,
              elm_layout_signal_emit(obj, "elm,action,hide", "elm");
              sd->hidden = EINA_TRUE;
              evas_object_repeat_events_set(obj, EINA_TRUE);
-             if (sd->content && elm_widget_focus_get(sd->content))
+             if (sd->content && efl_ui_focus_object_focus_get(sd->content))
                {
                   elm_widget_focused_object_clear(obj);
                   elm_widget_focus_steal(obj, NULL);
@@ -1005,7 +1005,7 @@ _elm_panel_evas_object_smart_add(Eo *obj, Elm_Panel_Data *priv)
 
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
    elm_widget_sub_object_parent_add(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    priv->panel_edje = wd->resize_obj;
 

@@ -664,7 +664,7 @@ _elm_clock_evas_object_smart_add(Eo *obj, Elm_Clock_Data *priv)
    priv->cur.digedit = ELM_CLOCK_EDIT_DEFAULT;
    priv->first_interval = DEFAULT_FIRST_INTERVAL;
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    _time_update(obj, EINA_FALSE);
    _ticker(obj);

@@ -49,7 +49,7 @@ _elm_separator_evas_object_smart_add(Eo *obj, Elm_Separator_Data *sd EINA_UNUSED
 {
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
    elm_widget_sub_object_parent_add(obj);
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    if (!elm_layout_theme_set
        (obj, "separator", "vertical", elm_widget_style_get(obj)))

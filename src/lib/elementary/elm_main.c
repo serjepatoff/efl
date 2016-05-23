@@ -1367,7 +1367,7 @@ EAPI Eina_Bool
 elm_object_focus_get(const Evas_Object *obj)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
-   return elm_widget_focus_get(obj);
+   return efl_ui_focus_object_focus_get(obj);
 }
 
 EAPI void
@@ -1378,7 +1378,7 @@ elm_object_focus_set(Evas_Object *obj,
 
    if (elm_widget_is(obj))
      {
-        if (focus == elm_widget_focus_get(obj)) return;
+        if (focus == efl_ui_focus_object_focus_get(obj)) return;
 
         // ugly, but, special case for inlined windows
         if (eo_isa(obj, ELM_WIN_CLASS))
@@ -1407,14 +1407,14 @@ elm_object_focus_allow_set(Evas_Object *obj,
                            Eina_Bool    enable)
 {
    EINA_SAFETY_ON_NULL_RETURN(obj);
-   elm_widget_can_focus_set(obj, enable);
+   efl_ui_focus_object_can_focus_set(obj, enable);
 }
 
 EAPI Eina_Bool
 elm_object_focus_allow_get(const Evas_Object *obj)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
-   return (elm_widget_can_focus_get(obj)) || (elm_widget_child_can_focus_get(obj));
+   return (efl_ui_focus_object_can_focus_get(obj)) || (elm_widget_child_can_focus_get(obj));
 }
 
 EAPI void

@@ -549,7 +549,7 @@ _elm_thumb_evas_object_smart_add(Eo *obj, Elm_Thumb_Data *_pd EINA_UNUSED)
    evas_object_event_callback_add
      (obj, EVAS_CALLBACK_MOUSE_UP, _mouse_up_cb, obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 }
 
 EOLIAN static void

@@ -588,7 +588,7 @@ _elm_image_evas_object_smart_add(Eo *obj, Elm_Image_Data *priv)
    priv->scale = 1.0;
    eina_spinlock_new(&priv->async.lck);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    _elm_image_sizing_eval(obj);
 }

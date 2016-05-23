@@ -1583,9 +1583,9 @@ _elm_win_elm_widget_on_focus(Eo *obj, Elm_Win_Data *sd, Elm_Object_Item *item EI
    if (!int_ret) return EINA_TRUE;
 
    if (sd->img_obj)
-     evas_object_focus_set(sd->img_obj, elm_widget_focus_get(obj));
+     evas_object_focus_set(sd->img_obj, efl_ui_focus_object_focus_get(obj));
    else
-     evas_object_focus_set(obj, elm_widget_focus_get(obj));
+     evas_object_focus_set(obj, efl_ui_focus_object_focus_get(obj));
 
    return EINA_TRUE;
 }
@@ -3307,7 +3307,7 @@ _elm_win_evas_object_smart_add(Eo *obj, Elm_Win_Data *_pd EINA_UNUSED)
 {
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    elm_widget_highlight_ignore_set(obj, EINA_TRUE);
 }

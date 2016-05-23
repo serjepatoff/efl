@@ -236,7 +236,7 @@ _elm_radio_evas_object_smart_add(Eo *obj, Elm_Radio_Data *priv)
    priv->group = calloc(1, sizeof(Group));
    priv->group->radios = eina_list_append(priv->group->radios, obj);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    elm_layout_sizing_eval(obj);
 

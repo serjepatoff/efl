@@ -125,7 +125,7 @@ _elm_flip_elm_widget_focus_next(Eo *obj EINA_UNUSED, Elm_Flip_Data *sd, Elm_Focu
 EOLIAN static Eina_Bool
 _elm_flip_elm_widget_focus_direction_manager_is(Eo *obj EINA_UNUSED, Elm_Flip_Data *_pd EINA_UNUSED)
 {
-   if (!elm_widget_can_focus_get(obj))
+   if (!efl_ui_focus_object_can_focus_get(obj))
      return EINA_TRUE;
    else
      return EINA_FALSE;
@@ -1838,7 +1838,7 @@ _elm_flip_evas_object_smart_add(Eo *obj, Elm_Flip_Data *priv)
    priv->next_state = EINA_TRUE;
    priv->intmode = ELM_FLIP_INTERACTION_NONE;
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    _sizing_eval(obj);
 }

@@ -1446,7 +1446,7 @@ _elm_fileselector_evas_object_smart_add(Eo *obj, Elm_Fileselector_Data *priv)
 
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
    elm_widget_sub_object_parent_add(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    priv->expand = !!_elm_config->fileselector_expand_enable;
    priv->double_tap_navigation = !!_elm_config->fileselector_double_tap_navigation_enable;
@@ -1538,9 +1538,9 @@ _elm_fileselector_evas_object_smart_add(Eo *obj, Elm_Fileselector_Data *priv)
    eo_event_callback_add
      (en, ELM_ENTRY_EVENT_ANCHOR_CLICKED, _anchor_clicked, obj);
    eo_event_callback_add
-     (en, ELM_WIDGET_EVENT_FOCUSED, _on_text_focused, obj);
+     (en, EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, _on_text_focused, obj);
    eo_event_callback_add
-     (en, ELM_WIDGET_EVENT_UNFOCUSED, _on_text_unfocused, obj);
+     (en, EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, _on_text_unfocused, obj);
    eo_event_callback_add
      (en, ELM_ENTRY_EVENT_ACTIVATED, _on_text_activated, obj);
 

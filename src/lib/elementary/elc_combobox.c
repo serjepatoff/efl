@@ -350,8 +350,8 @@ _mbe_item_added(void *data, const Eo_Event *event EINA_UNUSED)
 
 EO_CALLBACKS_ARRAY_DEFINE(mbe_callbacks,
        { EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _mbe_clicked_cb },
-       { ELM_WIDGET_EVENT_FOCUSED, _mbe_focused_cb },
-       { ELM_WIDGET_EVENT_UNFOCUSED, _mbe_unfocused_cb },
+       { EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, _mbe_focused_cb },
+       { EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, _mbe_unfocused_cb },
        { ELM_MULTIBUTTONENTRY_EVENT_ITEM_ADDED , _mbe_item_added });
 
 EO_CALLBACKS_ARRAY_DEFINE(entry_callbacks,
@@ -389,7 +389,7 @@ _elm_combobox_multiple_selection_set(Eo *obj, Elm_Combobox_Data *pd,
         evas_object_show(scr);
         elm_object_content_set(scr, pd->mbe);
         elm_object_part_content_set(obj, "elm.swallow.content", scr);
-        elm_widget_can_focus_set(pd->genlist, EINA_FALSE);
+        efl_ui_focus_object_can_focus_set(pd->genlist, EINA_FALSE);
 
         eo_composite_attach(obj, pd->mbe);
      }
@@ -400,7 +400,7 @@ _elm_combobox_multiple_selection_set(Eo *obj, Elm_Combobox_Data *pd,
         elm_object_text_set(pd->entry, elm_object_part_text_get(pd->mbe, NULL));
         elm_object_part_text_set(pd->entry, "guide",
                                  elm_object_part_text_get(pd->mbe, "guide"));
-        elm_widget_can_focus_set(pd->genlist, EINA_TRUE);
+        efl_ui_focus_object_can_focus_set(pd->genlist, EINA_TRUE);
         elm_genlist_item_bring_in(pd->item, ELM_GENLIST_ITEM_SCROLLTO_NONE);
         evas_object_hide(scr);
 

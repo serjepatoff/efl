@@ -56,8 +56,8 @@ _entry_clicked_cb(void *data, const Eo_Event *event);
 
 EO_CALLBACKS_ARRAY_DEFINE(_multi_buttonentry_cb,
    { ELM_MULTIBUTTONENTRY_EVENT_CHANGED, _entry_changed_cb },
-   { ELM_WIDGET_EVENT_FOCUSED, _entry_focus_in_cb },
-   { ELM_WIDGET_EVENT_UNFOCUSED, _entry_focus_out_cb },
+   { EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, _entry_focus_in_cb },
+   { EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, _entry_focus_out_cb },
    { EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _entry_clicked_cb }
 );
 
@@ -138,11 +138,11 @@ _visual_guide_text_set(Evas_Object *obj)
    elm_box_unpack(sd->box, sd->entry);
    if (sd->view_state == MULTIBUTTONENTRY_VIEW_SHRINK) return;
 
-   if (!elm_widget_focus_get(obj))
+   if (!efl_ui_focus_object_focus_get(obj))
      elm_object_focus_set(sd->entry, EINA_FALSE);
 
    if ((!eina_list_count(sd->items)) && sd->guide_text
-       && (!elm_widget_focus_get(obj)) && (!sd->n_str))
+       && (!efl_ui_focus_object_focus_get(obj)) && (!sd->n_str))
      {
         evas_object_hide(sd->entry);
         elm_box_pack_end(sd->box, sd->guide_text);
@@ -157,7 +157,7 @@ _visual_guide_text_set(Evas_Object *obj)
           {
              elm_box_pack_end(sd->box, sd->entry);
              evas_object_show(sd->entry);
-             if (elm_widget_focus_get(obj))
+             if (efl_ui_focus_object_focus_get(obj))
                {
                   if (!sd->selected_it)
                     elm_object_focus_set(sd->entry, EINA_TRUE);
@@ -339,7 +339,7 @@ _view_update(Elm_Multibuttonentry_Data *sd)
 EOLIAN static Eina_Bool
 _elm_multibuttonentry_elm_widget_on_focus(Eo *obj, Elm_Multibuttonentry_Data *sd, Elm_Object_Item *item EINA_UNUSED)
 {
-   if (elm_widget_focus_get(obj))
+   if (efl_ui_focus_object_focus_get(obj))
      {
         // ACCESS
         if (_elm_config->access_mode == ELM_ACCESS_MODE_ON) goto end;
@@ -358,7 +358,7 @@ _elm_multibuttonentry_elm_widget_on_focus(Eo *obj, Elm_Multibuttonentry_Data *sd
                }
           }
         eo_event_callback_call
-          (obj, ELM_WIDGET_EVENT_FOCUSED, NULL);
+          (obj, EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, NULL);
      }
    else
      {
@@ -368,7 +368,7 @@ _elm_multibuttonentry_elm_widget_on_focus(Eo *obj, Elm_Multibuttonentry_Data *sd
              elm_entry_input_panel_hide(sd->entry);
           }
         eo_event_callback_call
-          (obj, ELM_WIDGET_EVENT_UNFOCUSED, NULL);
+          (obj, EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, NULL);
      }
 
 end:
@@ -462,7 +462,7 @@ _item_select(Evas_Object *obj,
 
         if (it->func) it->func((void *)(WIDGET_ITEM_DATA_GET(EO_OBJ(it))), WIDGET(it), EO_OBJ(it));
 
-        if (elm_widget_focus_get(obj))
+        if (efl_ui_focus_object_focus_get(obj))
           {
              elm_object_focus_set(sd->entry, EINA_FALSE);
              elm_object_focus_set(VIEW(it), EINA_TRUE);
@@ -493,7 +493,7 @@ _item_select(Evas_Object *obj,
      {
         _current_item_state_change
           (obj, MULTIBUTTONENTRY_BUTTON_STATE_DEFAULT);
-        if (elm_widget_focus_get(obj) && sd->editable)
+        if (efl_ui_focus_object_focus_get(obj) && sd->editable)
           elm_object_focus_set(sd->entry, EINA_TRUE);
      }
 }
@@ -1035,7 +1035,7 @@ _entry_resize_cb(void *data,
 
    evas_object_geometry_get(sd->entry, &en_x, &en_y, &en_w, &en_h);
 
-   if (elm_widget_focus_get(sd->parent))
+   if (efl_ui_focus_object_focus_get(sd->parent))
      elm_widget_show_region_set(sd->entry, en_x, en_y, en_w, en_h, EINA_TRUE);
 }
 
@@ -1569,7 +1569,7 @@ _elm_multibuttonentry_evas_object_smart_add(Eo *obj, Elm_Multibuttonentry_Data *
        (obj, "multibuttonentry", "base", elm_widget_style_get(obj)))
      CRI("Failed to set layout!");
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    priv->last_it_select = EINA_TRUE;
    priv->editable = EINA_TRUE;
@@ -1639,7 +1639,7 @@ _elm_multibuttonentry_elm_widget_focus_next(Eo *obj, Elm_Multibuttonentry_Data *
    Evas_Object *ao;
    Evas_Object *po;
 
-   if (!elm_widget_focus_get(obj))
+   if (!efl_ui_focus_object_focus_get(obj))
      {
         *next = (Evas_Object *)obj;
         return EINA_TRUE;
@@ -1649,7 +1649,7 @@ _elm_multibuttonentry_elm_widget_focus_next(Eo *obj, Elm_Multibuttonentry_Data *
      {
         po = (Evas_Object *)edje_object_part_object_get(sd->label, "elm.text");
         ao = evas_object_data_get(po, "_part_access_obj");
-        int_ret = elm_widget_focus_get(ao);
+        int_ret = efl_ui_focus_object_focus_get(ao);
         items = eina_list_append(items, ao);
      }
 
@@ -1659,13 +1659,13 @@ _elm_multibuttonentry_elm_widget_focus_next(Eo *obj, Elm_Multibuttonentry_Data *
         po = (Evas_Object *)edje_object_part_object_get
                            (elm_layout_edje_get(VIEW(item)), "elm.btn.text");
         ao = evas_object_data_get(po, "_part_access_obj");
-        int_ret = int_ret || elm_widget_focus_get(ao);
+        int_ret = int_ret || efl_ui_focus_object_focus_get(ao);
         items = eina_list_append(items, ao);
      }
 
    if (sd->entry)
      {
-        int_ret = int_ret || elm_widget_focus_get(sd->entry);
+        int_ret = int_ret || efl_ui_focus_object_focus_get(sd->entry);
         /* elm_widget_list_focus_liset_next_get() check parent of item
            because parent sd->entry is not multibuttnentry but sd->box
            so append sd->box instead of sd->entry, is this proper? */

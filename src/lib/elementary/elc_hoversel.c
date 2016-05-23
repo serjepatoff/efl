@@ -523,7 +523,7 @@ EOLIAN static Eina_Bool
 _elm_hoversel_item_elm_widget_item_focus_get(Eo *eo_it EINA_UNUSED,
                                              Elm_Hoversel_Item_Data *it)
 {
-   return elm_widget_focus_get(VIEW(it));
+   return efl_ui_focus_object_focus_get(VIEW(it));
 }
 
 EOLIAN static void
@@ -786,8 +786,8 @@ _elm_hoversel_item_add(Eo *obj, Elm_Hoversel_Data *sd, const char *label, const 
     evas_object_size_hint_weight_set(bt, EVAS_HINT_EXPAND, 0.0);
     evas_object_size_hint_align_set(bt, EVAS_HINT_FILL, EVAS_HINT_FILL);
     eo_event_callback_add(bt, EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _on_item_clicked, item);
-    eo_event_callback_add(bt, ELM_WIDGET_EVENT_FOCUSED, _item_focused_cb, item);
-    eo_event_callback_add(bt, ELM_WIDGET_EVENT_UNFOCUSED, _item_unfocused_cb, item);
+    eo_event_callback_add(bt, EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, _item_focused_cb, item);
+    eo_event_callback_add(bt, EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, _item_unfocused_cb, item);
 
    sd->items = eina_list_append(sd->items, eo_item);
 

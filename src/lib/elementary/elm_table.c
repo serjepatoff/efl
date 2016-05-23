@@ -177,7 +177,7 @@ _elm_table_evas_object_smart_add(Eo *obj, void *_pd EINA_UNUSED)
 
    evas_obj_smart_add(eo_super(obj, MY_CLASS));
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
    elm_widget_highlight_ignore_set(obj, EINA_FALSE);
 
    elm_obj_widget_theme_apply(obj);

@@ -387,7 +387,7 @@ _elm_label_evas_object_smart_add(Eo *obj, Elm_Label_Data *priv)
                                    _on_slide_end, obj);
 
    /* access */
-   elm_widget_can_focus_set(obj, _elm_config->access_mode);
+   efl_ui_focus_object_can_focus_set(obj, _elm_config->access_mode);
 
    _elm_access_object_register(obj, wd->resize_obj);
    _elm_access_text_set(_elm_access_info_get(obj), ELM_ACCESS_TYPE,

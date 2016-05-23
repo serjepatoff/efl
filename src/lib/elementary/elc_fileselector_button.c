@@ -191,7 +191,7 @@ _elm_fileselector_button_evas_object_smart_add(Eo *obj, Elm_Fileselector_Button_
          (obj, EVAS_CLICKABLE_INTERFACE_EVENT_CLICKED, _button_clicked, priv);
 
    elm_obj_widget_theme_apply(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 }
 
 EOLIAN static void

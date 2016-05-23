@@ -278,7 +278,7 @@ _elm_mapbuf_evas_object_smart_add(Eo *obj, Elm_Mapbuf_Data *priv)
    priv->alpha = EINA_TRUE;
    priv->smooth = EINA_TRUE;
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
 
    _sizing_eval(obj);
 }

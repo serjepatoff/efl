@@ -1421,7 +1421,7 @@ _elm_calendar_evas_object_smart_add(Eo *obj, Elm_Calendar_Data *priv)
    t = _time_to_next_day(&priv->current_time);
    priv->update_timer = ecore_timer_add(t, _update_cur_date, obj);
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    if (!elm_layout_theme_set(obj, "calendar", "base",
                              elm_object_style_get(obj)))

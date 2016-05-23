@@ -218,7 +218,7 @@ _efl_ui_box_evas_object_smart_add(Eo *obj, Efl_Ui_Box_Data *_pd EINA_UNUSED)
    eo_event_callback_add(wd->resize_obj, EVAS_BOX_EVENT_CHILD_ADDED, _child_added_cb_proxy, obj);
    eo_event_callback_add(wd->resize_obj, EVAS_BOX_EVENT_CHILD_REMOVED, _child_removed_cb_proxy, obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
    elm_widget_highlight_ignore_set(obj, EINA_TRUE);
 
    // new defaults: fill - no expand

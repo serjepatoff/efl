@@ -297,7 +297,7 @@ elm_factory_add(Evas_Object *parent)
    elm_widget_content_set_hook_set(obj, _content_set_hook);
    elm_widget_content_get_hook_set(obj, _content_get_hook);
    elm_widget_content_unset_hook_set(obj, _content_unset_hook);
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
    elm_widget_changed_hook_set(obj, _changed);
 
    evas_object_event_callback_add(obj, EVAS_CALLBACK_MOVE, _move, NULL);

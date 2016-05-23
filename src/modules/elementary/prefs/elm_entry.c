@@ -152,7 +152,7 @@ elm_prefs_entry_add(const Elm_Prefs_Item_Iface *iface EINA_UNUSED,
    eo_event_callback_add
      (obj, ELM_ENTRY_EVENT_ACTIVATED, _item_changed_cb, cb);
    eo_event_callback_add
-     (obj, ELM_WIDGET_EVENT_UNFOCUSED, _item_changed_cb, cb);
+     (obj, EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, _item_changed_cb, cb);
    if (spec.s.accept)
      {
         int ret;

@@ -68,7 +68,7 @@ _elm_plug_elm_widget_on_focus(Eo *obj, void *sd EINA_UNUSED, Elm_Object_Item *it
    int_ret = elm_obj_widget_on_focus(eo_super(obj, MY_CLASS), NULL);
    if (!int_ret) return EINA_FALSE;
 
-   if (elm_widget_focus_get(obj))
+   if (efl_ui_focus_object_focus_get(obj))
      {
         evas_object_focus_set(wd->resize_obj, EINA_TRUE);
      }
@@ -128,7 +128,7 @@ _elm_plug_evas_object_smart_add(Eo *obj, void *sd EINA_UNUSED)
      (wd->resize_obj, EVAS_CALLBACK_MOUSE_UP, _on_mouse_up,
      obj);
 
-   elm_widget_can_focus_set(obj, EINA_FALSE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_FALSE);
    _sizing_eval(obj);
 }
 

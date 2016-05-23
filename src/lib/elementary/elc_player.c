@@ -701,7 +701,7 @@ _elm_player_evas_object_smart_add(Eo *obj, Elm_Player_Data *priv)
      (priv->vslider, ELM_SLIDER_EVENT_CHANGED, _update_volume, obj);
 
    elm_layout_sizing_eval(obj);
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 }
 
 EOLIAN static void

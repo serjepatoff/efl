@@ -625,7 +625,7 @@ _elm_flipselector_evas_object_smart_add(Eo *obj, Elm_Flipselector_Data *priv)
    priv->first_interval = FLIP_FIRST_INTERVAL;
    priv->step = 1.0;
 
-   elm_widget_can_focus_set(obj, EINA_TRUE);
+   efl_ui_focus_object_can_focus_set(obj, EINA_TRUE);
 
    elm_obj_widget_theme_apply(obj);
 }

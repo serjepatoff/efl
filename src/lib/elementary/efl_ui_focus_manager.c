@@ -56,7 +56,7 @@ _complement(Efl_Ui_Focus_Direction dir)
  * Create a new node
  */
 static Node*
-node_new(Efl_Ui_Focus_Object *focusable, Efl_Ui_Focus_Manager *manager)
+node_new(Elm_Widget *focusable, Efl_Ui_Focus_Manager *manager)
 {
     Node *node;
 
@@ -239,38 +239,6 @@ _distance(Eina_Rectangle node, Eina_Rectangle op, Dimension dim)
       return v2;
 }
 
-static inline Eina_Bool
-check_intersection(Efl_Ui_Focus_Manager_Data *pd)
-{
-   Eina_Iterator *one, *two;
-   Elm_Widget **elm1;
-   Eina_Rectangle elm1_xy, elm2_xy;
-
-   one = eina_hash_iterator_key_new(pd->node_hash);
-
-
-   EINA_ITERATOR_FOREACH(one, elm1)
-    {
-       Elm_Widget **elm2;
-
-       evas_object_geometry_get(*elm1, &elm1_xy.x, &elm1_xy.y, &elm1_xy.w, &elm1_xy.h);
-       two = eina_hash_iterator_key_new(pd->node_hash);
-
-       EINA_ITERATOR_FOREACH(two, elm2)
-         {
-            if (*elm1 == *elm2) continue;
-
-            evas_object_geometry_get(*elm2, &elm2_xy.x, &elm2_xy.y, &elm2_xy.w, &elm2_xy.h);
-
-            if (eina_rectangle_intersection(&elm2_xy, &elm1_xy))
-              {
-                 ERR("Object %p and %p are intersecting! Focus experience will be poor\n", elm1, elm2);
-              }
-         }
-    }
-    return EINA_FALSE;
-}
-
 static inline void
 _calculate_node(Anchor *anchor, Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node, Dimension dim)
 {
@@ -329,14 +297,17 @@ _calculate_node(Anchor *anchor, Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node,
          * If they are connected one point of the 4 lies between the min and max of the other line
          */
         if (!((min <= max && max <= dim_min && dim_min <= dim_max) ||
-              (dim_min <= dim_max && dim_max <= min && min <= max)))
+              (dim_min <= dim_max && dim_max <= min && min <= max)) &&
+              !eina_rectangle_intersection(&op_rect, &rect))
           {
              //this thing hits horizontal
              int tmp_dis;
 
              tmp_dis = _distance(rect, op_rect, dim);
-#if 0
-             printf("LOOKING AT IT DISTANCE %d \n", tmp_dis);
+#ifdef DEBUG
+             printf("(%d,%d,%d,%d)%s vs(%d,%d,%d,%d)%s\n", rect.x, rect.y, rect.w, rect.h, eo_name_get(node), op_rect.x, op_rect.y, op_rect.w, op_rect.h, eo_name_get(op));
+             printf("(%d,%d,%d,%d)\n", min, max, dim_min, dim_max);
+             printf("Candidate %d\n", tmp_dis);
 #endif
              if (anchor->anchor == NULL || abs(tmp_dis) < abs(distance)) //init case
                {
@@ -344,11 +315,11 @@ _calculate_node(Anchor *anchor, Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node,
                   anchor->positive = tmp_dis > 0 ? EINA_FALSE : EINA_TRUE;
                   anchor->anchor = op;
                   //Helper for debugging wrong calculations
-                  #if 0
-                  printf("CORRECTION FOR %p found anchor %s (%d,%d,%d,%d) (%d,%d,%d,%d)\n", node, eo_id_get(op),
+#ifdef DEBUG
+                  printf("CORRECTION FOR %s found anchor %s (%d,%d,%d,%d) (%d,%d,%d,%d)\n", eo_name_get(node), eo_name_get(op),
                    op_rect.x, op_rect.y, op_rect.w, op_rect.h,
                    rect.x, rect.y, rect.w, rect.h);
-                  #endif
+#endif
                }
          }
 
@@ -381,13 +352,26 @@ relation_fix(Efl_Ui_Focus_Manager_Data *pd, Dimension dim, Node *node, Anchor an
           node_relink(pos, neg, DIM_EFL_UI_FOCUS_DIRECTION(dim, 0), NULL);
      }
 }
+#ifdef DEBUG
+static void
+_debug_node(Node *node)
+{
+   printf("NODE %s\n", eo_name_get(node->focusable));
 
+   if (node->directions[EFL_UI_FOCUS_DIRECTION_RIGHT])
+     printf("-RIGHT-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_RIGHT]->focusable));
+   if (node->directions[EFL_UI_FOCUS_DIRECTION_LEFT])
+     printf("-LEFT-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_LEFT]->focusable));
+   if (node->directions[EFL_UI_FOCUS_DIRECTION_UP])
+     printf("-UP-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_UP]->focusable));
+   if (node->directions[EFL_UI_FOCUS_DIRECTION_DOWN])
+     printf("-DOWN-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_DOWN]->focusable));
+}
+#endif
 static void
 dirty_flush(Efl_Ui_Focus_Manager_Data *pd)
 {
    Node *node;
-
-   check_intersection(pd);
 
    EINA_LIST_FREE(pd->dirty, node)
      {
@@ -398,6 +382,9 @@ dirty_flush(Efl_Ui_Focus_Manager_Data *pd)
 
         _calculate_node(&vertical, pd, node->focusable, DIMENSION_Y);
         relation_fix(pd, DIMENSION_Y, node, vertical);
+#ifdef DEBUG
+        _debug_node(node);
+#endif
      }
 }
 static void
@@ -443,45 +430,13 @@ _focus_in_cb(void *data, const Eo_Event *event)
    pd->focus_stack = eina_list_remove(pd->focus_stack, node);
    pd->focus_stack = eina_list_append(pd->focus_stack, node);
 
-   //remove focus from the old
-   if (old_focus)
-     elm_widget_focus_set(old_focus->focusable, EINA_FALSE);
-
-   return EO_CALLBACK_CONTINUE;
-}
-
-static Eina_Bool
-_focus_out_cb(void *data, const Eo_Event *event)
-{
-   Node *old_focus;
-   FOCUS_DATA(data)
-
-   old_focus = eina_list_last_data_get(pd->focus_stack);
-
-   if (old_focus->focusable == event->object)
-     {
-        Node *new_focus;
-
-        //the object with the current focus doesnt want anymore, remove it from the stack
-        pd->focus_stack = eina_list_remove(pd->focus_stack, old_focus);
-        //set focus on the new upper focus element
-        new_focus = eina_list_last_data_get(pd->focus_stack);
-        if (new_focus)
-          elm_widget_focus_set(new_focus->focusable, EINA_TRUE);
-     }
-   else
-     {
-        //its not the top element, it doesnt give up focus explicit, so keep it on the stack, for the case a upper focus element drops
-     }
-
    return EO_CALLBACK_CONTINUE;
 }
 
 EO_CALLBACKS_ARRAY_DEFINE(focusable_node,
     {EVAS_OBJECT_EVENT_RESIZE, _node_new_geometery_cb},
     {EVAS_OBJECT_EVENT_MOVE, _node_new_geometery_cb},
-    {ELM_WIDGET_EVENT_FOCUSED, _focus_in_cb},
-    {ELM_WIDGET_EVENT_UNFOCUSED, _focus_out_cb}
+    {ELM_WIDGET_EVENT_FOCUSED, _focus_in_cb}
 );
 
 //=============================
@@ -522,8 +477,7 @@ _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data 
 
    //remove the object from the stack if it hasnt dont that until now
    //after this its not at the top anymore
-   elm_widget_focus_set(node->focusable, EINA_FALSE);
-
+   //elm_widget_focus_set(node->focusable, EINA_FALSE);
    //delete again from the list, for the case it was not at the top
    pd->focus_stack = eina_list_remove(pd->focus_stack, node);
 
@@ -549,6 +503,8 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
    dir = upper->directions[direction];
    if (!dir) return NULL;
 
+   //unfocus the old one for now ...
+   elm_widget_focus_set(upper->focusable, EINA_FALSE);
    elm_widget_focus_set(dir->focusable, EINA_TRUE);
 
    return dir->focusable;

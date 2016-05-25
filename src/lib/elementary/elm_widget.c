@@ -2939,6 +2939,8 @@ _focused_object_clear(Elm_Widget_Smart_Data *sd)
                   break;
                }
           }
+        // we have unfocused all children set the focusflag on our self
+        sd->focused = EINA_FALSE;
      }
 }
 

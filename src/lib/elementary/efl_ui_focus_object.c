@@ -27,9 +27,9 @@ _efl_ui_focus_object_focus_set(Eo *obj, Efl_Ui_Focus_Object_Data *pd, Eina_Bool 
      {
         pd->focus = focus;
         if (pd->focus)
-          eo_event_callback_call(obj, EFL_UI_FOCUS_OBJECT_EVENT_FOCUS_IN, NULL);
+          eo_event_callback_call(obj, EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, NULL);
         else
-          eo_event_callback_call(obj, EFL_UI_FOCUS_OBJECT_EVENT_FOCUS_OUT, NULL);
+          eo_event_callback_call(obj, EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, NULL);
      }
 }
 

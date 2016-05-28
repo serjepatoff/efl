@@ -1,9 +1,11 @@
-class Focus.Test(Efl.Ui.Focus.Object,  Efl.Gfx) {
+class Focus.Test(Eo.Base, Efl.Gfx, Efl.Ui.Focus.Object, Elm.Widget) {
     implements {
         Eo.Base.constructor;
         Efl.Gfx.position.set;
         Efl.Gfx.position.get;
         Efl.Gfx.size.set;
         Efl.Gfx.size.get;
+        Efl.Ui.Focus.Object.focus;
+        Elm.Widget.part_text.get;
     }
 }

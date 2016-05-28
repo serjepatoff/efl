@@ -3,11 +3,14 @@
 #endif
 
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
+#define ELM_INTERNAL_API_ARGESFSDFEFC
 #include <Elementary.h>
 #include "elm_suite.h"
+#include "elm_widget.h"
 
 typedef struct {
     Eina_Rectangle rect;
+    Eina_Bool focus;
 } Focus_Test_Data;
 
 #include "focus_test.eo.h"
@@ -48,9 +51,31 @@ _focus_test_eo_base_constructor(Eo *obj, Focus_Test_Data *pd)
    Eo *eo;
 
    eo = eo_constructor(eo_super(obj, FOCUS_TEST_CLASS));
-   efl_ui_focus_object_focusable_set(obj, EINA_TRUE);
    eina_rectangle_coords_from(&pd->rect, 0, 0, 0, 0);
    return eo;
+}
+
+static void
+_focus_test_efl_ui_focus_object_focus_set(Eo *obj, Focus_Test_Data *pd, Eina_Bool focus)
+{
+   pd->focus = focus;
+
+   if (pd->focus)
+     eo_event_callback_call(obj, EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, NULL);
+   else
+     eo_event_callback_call(obj, EFL_UI_FOCUS_OBJECT_EVENT_UNFOCUSED, NULL);
+}
+
+static Eina_Bool
+_focus_test_efl_ui_focus_object_focus_get(Eo *obj, Focus_Test_Data *pd)
+{
+   return pd->focus;
+}
+
+static const char *
+_focus_test_elm_widget_part_text_get(Eo *obj, Focus_Test_Data *pd, const char * part EINA_UNUSED)
+{
+   return eo_name_get(obj);
 }
 
 #include "focus_test.eo.c"
@@ -66,15 +91,12 @@ START_TEST(focus_unregister_twice)
    Efl_Ui_Focus_Object *r1 = eo_add(FOCUS_TEST_CLASS, m);
    Efl_Ui_Focus_Object *r2 = eo_add(FOCUS_TEST_CLASS, m);
 
-
-   efl_ui_focus_object_focusable_set(r1, EINA_FALSE);
    fail_if(!efl_ui_focus_manager_register(m, r1));
+   fail_if(!efl_ui_focus_manager_register(m, r2));
+
    efl_ui_focus_manager_unregister(m, r1);
-
-   efl_ui_focus_object_focusable_set(r1, EINA_TRUE);
-   efl_ui_focus_object_focusable_set(r1, EINA_FALSE);
-
-   efl_ui_focus_object_focusable_set(r2, EINA_FALSE);
+   efl_ui_focus_manager_unregister(m, r1);
+   efl_ui_focus_manager_unregister(m, r1);
 
    eo_unref(r2);
    eo_unref(r1);
@@ -91,6 +113,7 @@ START_TEST(focus_register_twice)
    Efl_Ui_Focus_Manager *m = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
    Efl_Ui_Focus_Object *r1 = eo_add(FOCUS_TEST_CLASS, m);
 
+   fail_if(!efl_ui_focus_manager_register(m, r1));
    fail_if(efl_ui_focus_manager_register(m, r1));
 
    eo_unref(r1);
@@ -126,6 +149,12 @@ _setup_cross(Efl_Ui_Focus_Object **middle, Efl_Ui_Focus_Object **south,
    *west = eo_add(FOCUS_TEST_CLASS, m);
    eo_name_set(*west, "west");
    Q(*west, 0, 40, 20, 20)
+
+   efl_ui_focus_manager_register(m, *middle);
+   efl_ui_focus_manager_register(m, *south);
+   efl_ui_focus_manager_register(m, *north);
+   efl_ui_focus_manager_register(m, *east);
+   efl_ui_focus_manager_register(m, *west);
   }
 
 START_TEST(pos_check)
@@ -161,11 +190,11 @@ START_TEST(pos_check)
    printf("south check\n");
    CHECK(south, NULL, NULL, middle, NULL)
 
-   efl_ui_focus_object_focusable_set(middle, EINA_FALSE);
-   efl_ui_focus_object_focusable_set(south, EINA_FALSE);
-   efl_ui_focus_object_focusable_set(north, EINA_FALSE);
-   efl_ui_focus_object_focusable_set(east, EINA_FALSE);
-   efl_ui_focus_object_focusable_set(west, EINA_FALSE);
+   eo_unref(middle);
+   eo_unref(south);
+   eo_unref(north);
+   eo_unref(east);
+   eo_unref(west);
 
    elm_shutdown();
 }
@@ -182,11 +211,13 @@ START_TEST(redirect)
    Efl_Ui_Focus_Object *one = eo_add(FOCUS_TEST_CLASS, m2);
    eo_name_set(one, "one");
    Q(one, 0, 0, 20, 20)
+   efl_ui_focus_manager_register(m2, one);
 
    printf("TWO\n");
    Efl_Ui_Focus_Object *two = eo_add(FOCUS_TEST_CLASS, m2);
    eo_name_set(two, "two");
    Q(two, 20, 0, 20, 20)
+   efl_ui_focus_manager_register(m2, two);
 
    efl_ui_focus_object_focus_set(one, EINA_TRUE);
    efl_ui_focus_manager_redirect_set(m, m2);

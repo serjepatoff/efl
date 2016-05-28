@@ -285,6 +285,9 @@ static void
 _debug_node(Node *node)
 {
    Eina_List *tmp = NULL;
+
+   if (!node) return;
+
    printf("NODE %s\n", elm_widget_part_text_get(node->focusable, NULL));
 
 #define DIR_LIST(dir) node->directions[dir].partners
@@ -399,7 +402,16 @@ _focus_in_cb(void *data, const Eo_Event *event)
    return EO_CALLBACK_CONTINUE;
 }
 
+static Eina_Bool
+_child_del(void *data, const Eo_Event *event)
+{
+   WRN("The manager itself catched a deletion of a child. BAD");
+   efl_ui_focus_manager_unregister(data, event->object);
+   return EO_CALLBACK_CONTINUE;
+}
+
 EO_CALLBACKS_ARRAY_DEFINE(focusable_node,
+    {EO_EVENT_DEL, _child_del},
     {EVAS_OBJECT_EVENT_RESIZE, _node_new_geometery_cb},
     {EVAS_OBJECT_EVENT_MOVE, _node_new_geometery_cb},
     {EFL_UI_FOCUS_OBJECT_EVENT_FOCUSED, _focus_in_cb}
@@ -469,6 +481,9 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
 #ifdef DEBUG
    _debug_node(upper);
 #endif
+
+   if (!upper) return NULL;
+
    //we are searcing which of the partners is lower to the history
    EINA_LIST_REVERSE_FOREACH(pd->focus_stack, node, candidate)
      {
@@ -491,7 +506,7 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
    efl_ui_focus_object_focus_set(dir->focusable, EINA_TRUE);
 
 #ifdef DEBUG
-   printf("Focus, MOVE %s %s\n", elm_widget_part_text_get(r, NULL), elm_widget_type_get(r));
+   printf("Focus, MOVE %s %s\n", elm_widget_part_text_get(dir->focusable, NULL), elm_widget_type_get(dir->focusable));
 #endif
    return dir->focusable;
 }

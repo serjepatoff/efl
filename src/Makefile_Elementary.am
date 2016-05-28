@@ -642,7 +642,6 @@ lib_elementary_libelementary_la_SOURCES = \
 	lib/elementary/efl_ui_box_layout.c \
 	lib/elementary/efl_ui_grid.c \
 	lib/elementary/efl_ui_focus_manager.c \
-	lib/elementary/efl_ui_focus_object.c \
 	$(NULL)
 
 

@@ -21,10 +21,15 @@ typedef enum {
     DIMENSION_Y = 1,
 } Dimension;
 
+typedef struct _Border Border;
+struct _Border {
+  Eina_List *partners;
+};
+
 typedef struct _Node Node;
 struct _Node {
     Elm_Widget *focusable;
-    Node *directions[NODE_DIRECTIONS_COUNT];
+    Border directions[NODE_DIRECTIONS_COUNT];
     Efl_Ui_Focus_Manager *manager;
 };
 
@@ -52,6 +57,34 @@ _complement(Efl_Ui_Focus_Direction dir)
     return EFL_UI_FOCUS_DIRECTION_LAST;
 }
 
+/*
+ * Set this new list of partners to the border.
+ * All old partners will be deleted
+ */
+static void
+border_partners_set(Node *node, Efl_Ui_Focus_Direction direction, Eina_List *list)
+{
+   Node *partner;
+   Eina_List *lnode;
+   Border *border = &node->directions[direction];
+
+   EINA_LIST_FREE(border->partners, partner)
+     {
+        Border *comp_border = &partner->directions[_complement(direction)];
+
+        comp_border->partners = eina_list_remove(comp_border->partners, node);
+     }
+
+   border->partners = list;
+
+   EINA_LIST_FOREACH(border->partners, lnode, partner)
+     {
+        Border *comp_border = &partner->directions[_complement(direction)];
+
+        comp_border->partners = eina_list_append(comp_border->partners, node);
+     }
+}
+
 /**
  * Create a new node
  */
@@ -75,134 +108,13 @@ node_get(Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *focusable)
 }
 
 /**
- * Unlink a node from a special direction
- * If node is already linked in the given direction
- * the referenced node will also be unlinked
- * in the complement direction
- *--
- * @param item the node to unlink
- * @param direction the direction to unlink the item at
- */
-static void
-node_unlink(Node *item, Efl_Ui_Focus_Direction direction)
-{
-   if (!item->directions[direction]) return;
-
-   //delete where item is linked
-   item->directions[direction]->directions[_complement(direction)] = NULL;
-   //delete our link to direction
-   item->directions[direction] = NULL;
-}
-
-/**
- * link a in direction dir to b and b in the complement direction to a
- *
- * @param direction the direction to link the item to the new item
- * @param leaking a array of 2 fields where the old relations of a and b are saved
- *         the 0 index is the leak of a
- *         the 1 index is the leak of b
- *
- */
-static void
-node_relink(Node *a, Node *b, Efl_Ui_Focus_Direction dir, Node* leaking[2])
-{
-    Node *old_a = NULL, *old_b = NULL;
-
-    if (leaking)
-      {
-         leaking[0] = NULL;
-         leaking[1] = NULL;
-      }
-
-    if (a)
-      old_a = a->directions[dir];
-    if (b)
-      old_b = b->directions[_complement(dir)];
-
-    //null out the old nodes
-    if (old_a)
-      old_a->directions[_complement(dir)] = NULL;
-    if (old_b)
-      old_b->directions[dir] = NULL;
-
-    if (leaking)
-      {
-         if (old_a && old_a != b)
-             leaking[0] = old_a;
-         if (old_b && old_b != a)
-             leaking[1] = old_b;
-      }
-
-    if (a)
-      a->directions[dir] = b;
-    if (b)
-      b->directions[_complement(dir)] = a;
-}
-
-/**
- * Place a child in the direction, next to the anchor node.
- *
- * The passed dimension and the positive flag of the anchor defines a direction.
- * The function will place the child in the direction next to the anchor node.
- * Linking is transphorms from
- *
- * if the relation partner is NULL or the new positive relation partner of child will also be NULL
- *
- * ------------------(dim)------------------------->
- *  |node_anchor|-(positive)->|relation_partner|
- *
- * to
- *
- * ------------------(dim)------------------------->
- *  |node_anchor|-(positive)->|child|-(positive)->|relation_partner|
- *
- * the relation is defined with the anchor positive flag and the dimension
- *
- * @param child the item to place
- * @param anchor the struct which defines the node and the direction to go for, the
- * @param dim the dimension to perform this operation on
- * @param leaking the leaked nodes from the child
- */
-static void
-node_relink_middle(Efl_Ui_Focus_Manager_Data *pd, Node *child, Anchor anchor, Dimension dim, Node* leaking[2])
-{
-    Node *node_anchor, *relation_partner;
-    Node *leaks[2];
-    Efl_Ui_Focus_Direction supported, complement;
-
-    //we have a anchor which tells us that we are having the passed item in the positive or negative direction of the passed dimension
-    supported = DIM_EFL_UI_FOCUS_DIRECTION(dim, !anchor.positive);
-    complement = DIM_EFL_UI_FOCUS_DIRECTION(dim, anchor.positive);
-
-    //we are fitting the new child between two existing nodes with a relation
-    node_anchor = node_get(pd, anchor.anchor);
-    relation_partner = node_anchor->directions[supported];
-
-    if (relation_partner == child)
-      {
-         if (leaking)
-           {
-              leaks[0] = NULL;
-              leaking[1] = NULL;
-           }
-         return;
-      }
-
-    //relink the child to the relation partner in the
-    node_relink(child, relation_partner, supported, leaks);
-    if (leaking) leaking[0] = leaks[0];
-    node_relink(child, node_anchor, complement, leaks);
-    if (leaking) leaking[1] = leaks[1];
-}
-
-/**
  * Free a node item and unlink this item from all direction
  */
 static void
 node_item_free(Node *item)
 {
     for(int i = 0;i < NODE_DIRECTIONS_COUNT; i++){
-        node_unlink(item, i);
+        border_partners_set(item, i, NULL);
     }
 
     free(item);
@@ -240,22 +152,20 @@ _distance(Eina_Rectangle node, Eina_Rectangle op, Dimension dim)
 }
 
 static inline void
-_calculate_node(Anchor *anchor, Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node, Dimension dim)
+_calculate_node(Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node, Dimension dim, Eina_List **pos, Eina_List **neg)
 {
    Eina_Rectangle rect = EINA_RECTANGLE_INIT;
    Elm_Widget *op;
    Elm_Widget **focus_key;
-   int distance = 0;
    int dim_min, dim_max;
    Eina_Iterator *nodes;
-
+   int cur_pos_min = 0, cur_neg_min = 0;
 
    nodes = eina_hash_iterator_key_new(pd->node_hash);
    evas_object_geometry_get(node, &rect.x, &rect.y, &rect.w, &rect.h);
 
-   //null out the anchor
-   anchor->anchor = NULL;
-   anchor->positive = EINA_FALSE;
+   *pos = NULL;
+   *neg = NULL;
 
    if (dim == DIMENSION_X)
      {
@@ -272,8 +182,6 @@ _calculate_node(Anchor *anchor, Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node,
      {
         Eina_Rectangle op_rect = EINA_RECTANGLE_INIT;
         int min, max;
-
-
 
         op = *focus_key;
         if (op == node) continue;
@@ -304,70 +212,121 @@ _calculate_node(Anchor *anchor, Efl_Ui_Focus_Manager_Data *pd, Elm_Widget *node,
              int tmp_dis;
 
              tmp_dis = _distance(rect, op_rect, dim);
+
+             if (tmp_dis < 0)
+               {
+                  if (tmp_dis == cur_neg_min)
+                    {
+                       //add it
+                       *neg = eina_list_append(*neg, op);
+                    }
+                  else if (tmp_dis > cur_neg_min
+                    || cur_neg_min == 0) //init case
+                    {
+                       //nuke the old and add
 #ifdef DEBUG
-             printf("(%d,%d,%d,%d)%s vs(%d,%d,%d,%d)%s\n", rect.x, rect.y, rect.w, rect.h, eo_name_get(node), op_rect.x, op_rect.y, op_rect.w, op_rect.h, eo_name_get(op));
+                       printf("CORRECTION FOR %s\n found anchor %s in distance %d\n (%d,%d,%d,%d)\n (%d,%d,%d,%d)\n\n", elm_widget_part_text_get(node, NULL), elm_widget_part_text_get(op, NULL),
+                         tmp_dis,
+                         op_rect.x, op_rect.y, op_rect.w, op_rect.h,
+                         rect.x, rect.y, rect.w, rect.h);
+#endif
+                       *neg = eina_list_free(*neg);
+                       *neg = eina_list_append(NULL, op);
+                       cur_neg_min = tmp_dis;
+                    }
+               }
+             else
+               {
+                  if (tmp_dis == cur_pos_min)
+                    {
+                       //add it
+                       *pos = eina_list_append(*pos, op);
+                    }
+                  else if (tmp_dis < cur_pos_min
+                    || cur_pos_min == 0) //init case
+                    {
+                       //nuke the old and add
+#ifdef DEBUG
+                       printf("CORRECTION FOR %s\n found anchor %s in distance %d\n (%d,%d,%d,%d)\n (%d,%d,%d,%d)\n\n", elm_widget_part_text_get(node, NULL), elm_widget_part_text_get(op, NULL),
+                         tmp_dis,
+                         op_rect.x, op_rect.y, op_rect.w, op_rect.h,
+                         rect.x, rect.y, rect.w, rect.h);
+#endif
+                       *pos = eina_list_free(*pos);
+                       *pos = eina_list_append(NULL, op);
+                       cur_pos_min = tmp_dis;
+                    }
+               }
+
+
+#if 0
+             printf("(%d,%d,%d,%d)%s vs(%d,%d,%d,%d)%s\n", rect.x, rect.y, rect.w, rect.h, elm_widget_part_text_get(node, NULL), op_rect.x, op_rect.y, op_rect.w, op_rect.h, elm_widget_part_text_get(op, NULL));
              printf("(%d,%d,%d,%d)\n", min, max, dim_min, dim_max);
              printf("Candidate %d\n", tmp_dis);
-#endif
              if (anchor->anchor == NULL || abs(tmp_dis) < abs(distance)) //init case
                {
                   distance = tmp_dis;
                   anchor->positive = tmp_dis > 0 ? EINA_FALSE : EINA_TRUE;
                   anchor->anchor = op;
                   //Helper for debugging wrong calculations
-#ifdef DEBUG
-                  printf("CORRECTION FOR %s found anchor %s (%d,%d,%d,%d) (%d,%d,%d,%d)\n", eo_name_get(node), eo_name_get(op),
-                   op_rect.x, op_rect.y, op_rect.w, op_rect.h,
-                   rect.x, rect.y, rect.w, rect.h);
-#endif
+
                }
+#endif
          }
 
      }
 }
 
-
-static inline void
-relation_fix(Efl_Ui_Focus_Manager_Data *pd, Dimension dim, Node *node, Anchor anchor)
-{
-   if (anchor.anchor)
-     {
-        Node *leaks[2] = {NULL};
-
-        node_relink_middle(pd, node, anchor, dim, leaks);
-        /*
-         * If only one node would have leaked,
-         * the node would have only one other part linked.
-         * so this was a node at the border before.
-         */
-        if (leaks[0] && leaks[1])
-          node_relink(leaks[0], leaks[1], DIM_EFL_UI_FOCUS_DIRECTION(dim, !anchor.positive), NULL);
-     }
-   else
-     {
-        Node *pos = node->directions[DIM_EFL_UI_FOCUS_DIRECTION(dim, 1)];
-        Node *neg = node->directions[DIM_EFL_UI_FOCUS_DIRECTION(dim, 0)];
-        //we know the leaks here since node is leaked at both ends
-        if (pos && neg)
-          node_relink(pos, neg, DIM_EFL_UI_FOCUS_DIRECTION(dim, 0), NULL);
-     }
-}
 #ifdef DEBUG
 static void
 _debug_node(Node *node)
 {
-   printf("NODE %s\n", eo_name_get(node->focusable));
+   Eina_List *tmp = NULL;
+   printf("NODE %s\n", elm_widget_part_text_get(node->focusable, NULL));
 
-   if (node->directions[EFL_UI_FOCUS_DIRECTION_RIGHT])
-     printf("-RIGHT-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_RIGHT]->focusable));
-   if (node->directions[EFL_UI_FOCUS_DIRECTION_LEFT])
-     printf("-LEFT-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_LEFT]->focusable));
-   if (node->directions[EFL_UI_FOCUS_DIRECTION_UP])
-     printf("-UP-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_UP]->focusable));
-   if (node->directions[EFL_UI_FOCUS_DIRECTION_DOWN])
-     printf("-DOWN-> %s\n", eo_name_get(node->directions[EFL_UI_FOCUS_DIRECTION_DOWN]->focusable));
+#define DIR_LIST(dir) node->directions[dir].partners
+
+#define DIR_OUT(dir)\
+   tmp = DIR_LIST(dir); \
+   { \
+      Eina_List *list_node; \
+      Node *partner; \
+      printf("-"#dir"-> ("); \
+      EINA_LIST_FOREACH(tmp, list_node, partner) \
+        printf("%s,", elm_widget_part_text_get(partner->focusable, NULL)); \
+      printf(")\n"); \
+   }
+
+   DIR_OUT(EFL_UI_FOCUS_DIRECTION_RIGHT)
+   DIR_OUT(EFL_UI_FOCUS_DIRECTION_LEFT)
+   DIR_OUT(EFL_UI_FOCUS_DIRECTION_UP)
+   DIR_OUT(EFL_UI_FOCUS_DIRECTION_DOWN)
+
 }
 #endif
+
+static void
+convert_border_set(Efl_Ui_Focus_Manager_Data *pd, Node *node, Eina_List *focusable_list, Efl_Ui_Focus_Direction dir)
+{
+   Eina_List *partners = NULL;
+   Elm_Widget *obj;
+
+   EINA_LIST_FREE(focusable_list, obj)
+     {
+        Node *entry;
+
+        entry = node_get(pd, obj);
+        if (!entry)
+          {
+             CRI("Found a obj in graph without node-entry!");
+             return;
+          }
+        partners = eina_list_append(partners, entry);
+     }
+
+   border_partners_set(node, dir, partners);
+}
+
 static void
 dirty_flush(Efl_Ui_Focus_Manager_Data *pd)
 {
@@ -375,13 +334,17 @@ dirty_flush(Efl_Ui_Focus_Manager_Data *pd)
 
    EINA_LIST_FREE(pd->dirty, node)
      {
-        Anchor horizontal, vertical;
+        Eina_List *x_partners_pos, *x_partners_neg;
+        Eina_List *y_partners_pos, *y_partners_neg;
 
-        _calculate_node(&horizontal, pd, node->focusable, DIMENSION_X);
-        relation_fix(pd, DIMENSION_X, node, horizontal);
+        _calculate_node(pd, node->focusable, DIMENSION_X, &x_partners_pos, &x_partners_neg);
+        _calculate_node(pd, node->focusable, DIMENSION_Y, &y_partners_pos, &y_partners_neg);
 
-        _calculate_node(&vertical, pd, node->focusable, DIMENSION_Y);
-        relation_fix(pd, DIMENSION_Y, node, vertical);
+        convert_border_set(pd, node, x_partners_pos, EFL_UI_FOCUS_DIRECTION_RIGHT);
+        convert_border_set(pd, node, x_partners_neg, EFL_UI_FOCUS_DIRECTION_LEFT);
+        convert_border_set(pd, node, y_partners_neg, EFL_UI_FOCUS_DIRECTION_UP);
+        convert_border_set(pd, node, y_partners_pos, EFL_UI_FOCUS_DIRECTION_DOWN);
+
 #ifdef DEBUG
         _debug_node(node);
 #endif
@@ -490,7 +453,8 @@ _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data 
 EOLIAN static Elm_Widget*
 _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Efl_Ui_Focus_Direction direction)
 {
-   Node *upper, *dir;
+   Node *upper = NULL, *candidate, *dir = NULL;
+   Eina_List *node;
 
    dirty_flush(pd);
 
@@ -498,15 +462,33 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
      return efl_ui_focus_manager_move(pd->redirect, direction);
 
    upper = eina_list_last_data_get(pd->focus_stack);
-   if (!upper) return NULL;
+#ifdef DEBUG
+   _debug_node(upper);
+#endif
+   //we are searcing which of the partners is lower to the history
+   EINA_LIST_REVERSE_FOREACH(pd->focus_stack, node, candidate)
+     {
+        if (eina_list_data_find(upper->directions[direction].partners, candidate))
+          {
+             //this is the next accessable part
+             dir = candidate;
+             break;
+          }
+     }
 
-   dir = upper->directions[direction];
-   if (!dir) return NULL;
+   if (!dir)
+     {
+        dir = eina_list_data_get(upper->directions[direction].partners);
+        if (!dir) return NULL;
+     }
 
    //unfocus the old one for now ...
    elm_widget_focus_set(upper->focusable, EINA_FALSE);
    elm_widget_focus_set(dir->focusable, EINA_TRUE);
 
+#ifdef DEBUG
+   printf("Focus, MOVE %s %s\n", elm_widget_part_text_get(r, NULL), elm_widget_type_get(r));
+#endif
    return dir->focusable;
 }
 
@@ -579,7 +561,7 @@ _iterator_next(Border_Elements_Iterator *it, void **data)
      {
         for(int i = 0 ;i < NODE_DIRECTIONS_COUNT; i++)
           {
-             if (!node->directions[i])
+             if (!node->directions[i].partners)
                {
                   *data = node->focusable;
                   return EINA_TRUE;

@@ -2870,6 +2870,10 @@ _elm_widget_focus_set(Eo *obj, Elm_Widget_Smart_Data *sd, Eina_Bool focus)
         sd->focused = EINA_TRUE;
         elm_obj_widget_on_focus(obj, NULL);
      }
+   else if (!focus && sd->focused)
+     {
+        sd->focused = EINA_FALSE;
+     }
 
    if (focus)
      {

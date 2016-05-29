@@ -2863,7 +2863,7 @@ _elm_widget_signal_callback_del(Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNUSED,
 EOLIAN static void
 _elm_widget_focus_set(Eo *obj, Elm_Widget_Smart_Data *sd, Eina_Bool focus)
 {
-   if (!sd->focused)
+   if (focus && !sd->focused)
      {
         focus_order++;
         sd->focus_order = focus_order;

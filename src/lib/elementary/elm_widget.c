@@ -1084,6 +1084,106 @@ elm_widget_sub_object_parent_add(Evas_Object *sobj)
    return ret;
 }
 
+static Eo*
+_find_focus_manager(Eo *obj)
+{
+   Eo *cantidate;
+
+   cantidate  = obj;
+
+   while (elm_widget_parent_get(cantidate))
+     {
+        cantidate = elm_widget_parent_get(cantidate);
+        if (eo_isa(cantidate, EFL_UI_FOCUS_MANAGER_CLASS))
+          {
+             return cantidate;
+          }
+     }
+   return NULL;
+}
+
+static Eina_Bool
+_find_focusable(Elm_Widget *widget)
+{
+   Eina_List *node;
+   Elm_Widget *sub;
+
+   ELM_WIDGET_DATA_GET(widget, pd);
+
+   EINA_LIST_FOREACH(pd->subobjs, node, sub)
+     {
+        if (!elm_widget_is(sub)) continue;
+
+        if (_find_focusable(sub))
+          return EINA_TRUE;
+        {
+           ELM_WIDGET_DATA_GET(sub, wd);
+           if (wd->can_focus)
+             return EINA_TRUE;
+        }
+     }
+
+   return EINA_FALSE;
+}
+
+static void
+_focus_manager_check_state(Eo *obj)
+{
+   ELM_WIDGET_DATA_GET(obj, pd);
+
+   if (efl_ui_focus_object_can_focus_get(obj)
+       && !_find_focusable(obj))
+     {
+        if (!pd->focus.registered)
+          {
+             printf("REGISTER %p %s\n", obj, elm_widget_type_get(obj));
+             efl_ui_focus_manager_register(pd->focus.manager, obj);
+             pd->focus.registered = EINA_TRUE;
+          }
+     }
+   else
+     {
+        if (pd->focus.registered)
+          {
+             printf("UNREGISTER %p\n", obj);
+             efl_ui_focus_manager_unregister(pd->focus.manager, obj);
+             pd->focus.registered = EINA_FALSE;
+          }
+
+     }
+}
+
+static void
+_focus_manager_reregister(Eo *obj)
+{
+   ELM_WIDGET_DATA_GET(obj, pd);
+   Efl_Ui_Focus_Manager *manager;
+
+   manager = _find_focus_manager(obj);
+
+   if (manager == pd->focus.manager) return;
+   if (!manager)
+     {
+        ERR("Failed to find a manager");
+     }
+
+   //search the next higher focus manager
+   if (pd->focus.manager)
+     {
+        efl_ui_focus_manager_unregister(pd->focus.manager, obj);
+        pd->focus.manager = NULL;
+        pd->focus.registered = EINA_FALSE;
+     }
+
+   pd->focus.manager = manager;
+
+   if (pd->focus.manager)
+     {
+        _focus_manager_check_state(obj);
+     }
+}
+
+
 /*
  * @internal
  *
@@ -1126,6 +1226,8 @@ _elm_widget_sub_object_add(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
                return EINA_FALSE;
           }
         sdc->parent_obj = obj;
+        printf("REREGISTER %s\n", elm_widget_type_get(sobj));
+        _focus_manager_reregister(sobj);
 
         if (!sdc->on_create)
           elm_obj_widget_orientation_set(sobj, sd->orient_mode);
@@ -1171,6 +1273,8 @@ _elm_widget_sub_object_add(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
           }
      }
    sd->subobjs = eina_list_append(sd->subobjs, sobj);
+   _focus_manager_check_state(obj);
+
    evas_object_data_set(sobj, "elm-parent", obj);
 
    _callbacks_add(sobj, obj);
@@ -1292,12 +1396,13 @@ _elm_widget_sub_object_del(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
 
         ELM_WIDGET_DATA_GET(sobj, sdc);
         sdc->parent_obj = elm_widget_top_get(obj);
+        _focus_manager_reregister(sobj);
      }
 
    if (sd->resize_obj == sobj) sd->resize_obj = NULL;
 
    sd->subobjs = eina_list_remove(sd->subobjs, sobj);
-
+   _focus_manager_check_state(obj);
    _callbacks_del(sobj, obj);
 
    return EINA_TRUE;
@@ -1430,6 +1535,7 @@ _elm_widget_efl_ui_focus_object_can_focus_set(Eo *obj, Elm_Widget_Smart_Data *sd
           }
         eo_event_callback_array_del(obj, focus_callbacks(), NULL);
      }
+   _focus_manager_check_state(obj);
 }
 
 EOLIAN static Eina_Bool
@@ -2910,6 +3016,8 @@ _elm_widget_efl_ui_focus_object_focus_set(Eo *obj, Elm_Widget_Smart_Data *sd, Ei
                   break;
                }
           }
+        // we have unfocused all children set the focusflag on our self
+        sd->focused = EINA_FALSE;
      }
 }
 
@@ -2939,8 +3047,6 @@ _focused_object_clear(Elm_Widget_Smart_Data *sd)
                   break;
                }
           }
-        // we have unfocused all children set the focusflag on our self
-        sd->focused = EINA_FALSE;
      }
 }
 

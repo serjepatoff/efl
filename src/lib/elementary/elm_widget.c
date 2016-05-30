@@ -1161,10 +1161,13 @@ _elm_widget_sub_object_add(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
    if (_elm_widget_is(sobj))
      {
         ELM_WIDGET_DATA_GET(sobj, sdc);
+        Eo *old_parent;
+        Elm_Parent_Change change;
 
         if (sdc->parent_obj == obj) goto end;
         if (sdc->parent_obj)
           {
+             old_parent = obj;
              if (!elm_widget_sub_object_del(sdc->parent_obj, sobj))
                return EINA_FALSE;
           }
@@ -1202,6 +1205,11 @@ _elm_widget_sub_object_add(Eo *obj, Elm_Widget_Smart_Data *sd, Evas_Object *sobj
                   sdp->child_can_focus = EINA_TRUE;
                }
           }
+        //drop a event because of this change
+        change.child = sobj;
+        change.old_parent = old_parent;
+
+        eo_event_callback_call(sobj, ELM_WIDGET_EVENT_PARENT_CHANGED, &change);
      }
    else
      {
@@ -5805,6 +5813,24 @@ elm_widget_tree_dot_dump(const Evas_Object *top,
 #endif
 }
 
+static Eina_Bool
+_parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
+{
+   ELM_WIDGET_DATA_GET(event->object, pd);
+   Elm_Parent_Change *change = event->info;
+   Eina_List *node;
+   Elm_Widget *sobj;
+
+   printf("PARENT CHANGE %p\n", change);
+
+   EINA_LIST_FOREACH(pd->subobjs, node, sobj)
+     {
+        eo_event_callback_call(sobj, ELM_WIDGET_EVENT_PARENT_CHANGED, event->info);
+     }
+
+   return EO_CALLBACK_CONTINUE;
+}
+
 EOLIAN static Eo *
 _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
 {
@@ -5817,6 +5843,8 @@ _elm_widget_eo_base_constructor(Eo *obj, Elm_Widget_Smart_Data *sd EINA_UNUSED)
    parent = eo_parent_get(obj);
    elm_obj_widget_parent_set(obj, parent);
    sd->on_create = EINA_FALSE;
+
+   eo_event_callback_add(obj, ELM_WIDGET_EVENT_PARENT_CHANGED, _parent_changed, NULL);
 
    elm_interface_atspi_accessible_role_set(obj, ELM_ATSPI_ROLE_UNKNOWN);
    return obj;

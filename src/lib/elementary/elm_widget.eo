@@ -17,6 +17,11 @@ enum Elm.Activate
    back,
 }
 
+struct Elm.Parent_Change {
+   child : Elm.Widget; [[the child where the parent changed]]
+   old_parent : Elm.Widget; [[the old parent which was changed]]
+}
+
 struct Elm.Tooltip;
 struct Elm.Cursor;
 struct @extern Elm.Theme;
@@ -877,5 +882,6 @@ abstract Elm.Widget (Evas.Object.Smart, Elm.Interface.Atspi_Accessible, Elm.Inte
       unfocused;
       language,changed;
       access,changed;
+      parent,changed : Elm.Parent_Change*;
    }
 }

@@ -4626,10 +4626,21 @@ static Eina_Bool
 _focused(void *data, const Eo_Event *event)
 {
    Efl_Ui_Focus_Manager *manager = efl_ui_focus_object_manager_get(data);
+   Eina_Rectangle geom, vp_geom;
+   Elm_Scrollable_Smart_Interface_Data *pd;
+
+   pd = eo_data_scope_get(data, MY_SCROLLABLE_INTERFACE);
+
    //set us as redirect
    efl_ui_focus_manager_redirect_set(manager, data);
 
-   //TODO maybe bring them in ?
+   evas_object_geometry_get(pd->content, &vp_geom.x, &vp_geom.y, &vp_geom.w, &vp_geom.h);
+   evas_object_geometry_get(event->object, &geom.x, &geom.y, &geom.w, &geom.h);
+
+   geom.x -= vp_geom.x;
+   geom.y -= vp_geom.y;
+
+   elm_interface_scrollable_region_bring_in(data, geom.x, geom.y, geom.w, geom.h);
 
    return EO_CALLBACK_CONTINUE;
 }

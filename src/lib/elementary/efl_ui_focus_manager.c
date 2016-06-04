@@ -637,6 +637,23 @@ _efl_ui_focus_manager_border_elements_get(Eo *obj, Efl_Ui_Focus_Manager_Data *pd
    return (Eina_Iterator*) it;
 }
 
+EOLIAN static Eina_Iterator*
+_efl_ui_focus_manager_request(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Eo_Base *child, Efl_Ui_Focus_Direction direction)
+{
+   Node *node;
+
+   if (!child)
+     node = eina_list_last_data_get(pd->focus_stack);
+   else
+     node = node_get(pd, child);
+
+
+   if (!node) return NULL;
+
+   return eina_list_iterator_new(node->directions[direction].partners);
+}
+
+
 
 
 #include "efl_ui_focus_manager.eo.c"

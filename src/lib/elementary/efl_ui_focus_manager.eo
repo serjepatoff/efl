@@ -19,7 +19,18 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
             params {
                 direction : Efl.Ui.Focus.Direction; [[The direction to move to]]
             }
-            return : Eo.Base*; [[The element which is now focused]]
+            return : Eo.Base; [[The element which is now focused]]
+        }
+        request {
+            [[Request the nodes in relation to the given node
+
+              If NULL is passed as node the most upper history element is taken
+            ]]
+            params {
+                node : Eo.Base;
+                direction : Efl.Ui.Focus.Direction;
+            }
+            return : iterator<Eo.Base>;
         }
         register {
             [[Register a new item in the graph
@@ -27,14 +38,14 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
               The manager does not manager if it is focusable or not.
             ]]
             params {
-                child : Eo.Base*; [[The object to register]]
+                child : Eo.Base; [[The object to register]]
             }
             return : bool; [[$true if it was successfull $false if not]]
         }
         unregister {
             [[unregister the given item from the graph]]
             params {
-                child : Eo.Base*;
+                child : Eo.Base;
             }
         }
         @property redirect {
@@ -43,7 +54,7 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
               If this value is set all move requests are redirected to this manager object.
               Set it to $null once nothing should be redirected anymore.]]
             values {
-                redirect : Efl.Ui.Focus.Manager*;
+                redirect : Efl.Ui.Focus.Manager;
             }
         }
         @property border_elements {
@@ -56,7 +67,7 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
                 [[Get the list of border elements.]]
             }
             values {
-                border_elements : iterator<Efl.Ui.Focus.Manager*>*;
+                border_elements : iterator<Efl.Ui.Focus.Manager>;
             }
         }
     }

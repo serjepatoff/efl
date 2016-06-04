@@ -474,11 +474,23 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
      return efl_ui_focus_manager_move(pd->redirect, direction);
 
    upper = eina_list_last_data_get(pd->focus_stack);
+
+   if (!upper)
+     {
+        //select a item from the graph
+        Eina_Iterator *iter;
+
+        iter = eina_hash_iterator_data_new(pd->node_hash);
+
+        if (!eina_iterator_next(iter, (void**)&upper))
+          return NULL;
+
+        eina_iterator_free(iter);
+     }
+
 #ifdef DEBUG
    _debug_node(upper);
 #endif
-
-   if (!upper) return NULL;
 
    //we are searcing which of the partners is lower to the history
    EINA_LIST_REVERSE_FOREACH(pd->focus_stack, node, candidate)

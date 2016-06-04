@@ -76,4 +76,7 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
         Eo.Base.provider_find;
         Eo.Base.destructor;
     }
+    events {
+        pre,flush;
+    }
 }

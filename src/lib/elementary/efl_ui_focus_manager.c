@@ -331,9 +331,11 @@ convert_border_set(Efl_Ui_Focus_Manager_Data *pd, Node *node, Eina_List *focusab
 }
 
 static void
-dirty_flush(Efl_Ui_Focus_Manager_Data *pd)
+dirty_flush(Efl_Ui_Focus_Manager *obj, Efl_Ui_Focus_Manager_Data *pd)
 {
    Node *node;
+
+   eo_event_callback_call(obj, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, NULL);
 
    EINA_LIST_FREE(pd->dirty, node)
      {
@@ -468,7 +470,7 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
    Node *upper = NULL, *candidate, *dir = NULL;
    Eina_List *node;
 
-   dirty_flush(pd);
+   dirty_flush(obj, pd);
 
    if (pd->redirect)
      return efl_ui_focus_manager_move(pd->redirect, direction);
@@ -621,7 +623,7 @@ _efl_ui_focus_manager_border_elements_get(Eo *obj, Efl_Ui_Focus_Manager_Data *pd
 {
    Border_Elements_Iterator *it;
 
-   dirty_flush(pd);
+   dirty_flush(obj, pd);
 
    it = calloc(1, sizeof(Border_Elements_Iterator));
 

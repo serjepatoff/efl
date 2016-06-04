@@ -3938,17 +3938,16 @@ static void
 _focus_movement(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
    Evas_Event_Key_Down *down = event_info;
-   ELM_WIN_DATA_GET(data, pd);
    Eo *r = NULL;
 
    if (!strcmp(down->keyname, "Left"))
-     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_LEFT);
+     r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_LEFT);
    else if (!strcmp(down->keyname, "Right"))
-     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_RIGHT);
+     r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_RIGHT);
    else if (!strcmp(down->keyname, "Up"))
-     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_UP);
+     r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_UP);
    else if (!strcmp(down->keyname, "Down"))
-     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_DOWN);
+     r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_DOWN);
 }
 
 

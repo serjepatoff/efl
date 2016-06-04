@@ -509,7 +509,7 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
         if (!dir) return NULL;
      }
 
-
+   _elm_widget_focus_auto_show(dir->focusable);
    _elm_widget_focus_highlight_start(dir->focusable);
 
    //unfocus the old one for now ...

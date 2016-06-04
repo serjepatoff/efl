@@ -129,6 +129,10 @@ elm_eolian_files = \
 	efl_ui_layout_internal_box.eo \
 	efl_ui_layout_internal_table.eo \
 	efl_ui_focus_manager.eo \
+	efl_ui_focus_object.eo \
+	efl_ui_widget_focus.eo \
+	elm_layout_focus.eo \
+	efl_ui_widget_focus_user.eo \
 	$(NULL)
 
 elm_eolian_type_files = \
@@ -635,6 +639,8 @@ libelementary_la_SOURCES = \
 	efl_ui_text.c \
 	elm_focus_object.c \
 	elm_focus_graph.c \
+	efl_ui_focus_manager.c \
+	efl_ui_widget_focus.c \
 	$(NULL)
 
 libelementary_la_CFLAGS = @ELEMENTARY_CFLAGS@

@@ -1,0 +1,9 @@
+mixin Efl.Ui.Widget.Focus.User (Efl.Ui.Focus.Object, Eo.Base)
+{
+    [[This implements the manager get of the given interface.
+      It will always return the next lower manager lower than ]]
+    implements {
+        Efl.Ui.Focus.Object.manager.get;
+        Eo.Base.constructor;
+    }
+}

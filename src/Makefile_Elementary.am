@@ -141,6 +141,10 @@ elm_public_eolian_files = \
     lib/elementary/efl_ui_text_interactive.eo \
 	lib/elementary/efl_ui_text.eo \
 	lib/elementary/efl_ui_focus_manager.eo \
+	lib/elementary/efl_ui_focus_object.eo \
+	lib/elementary/efl_ui_widget_focus.eo \
+	lib/elementary/elm_layout_focus.eo \
+	lib/elementary/efl_ui_widget_focus_user.eo \
 	$(NULL)
 
 # Private classes (not exposed or shipped)
@@ -697,6 +701,7 @@ lib_elementary_libelementary_la_SOURCES = \
 	lib/elementary/efl_ui_grid_private.h \
 	lib/elementary/efl_ui_text.c \
 	lib/elementary/efl_ui_focus_manager.c \
+	lib/elementary/efl_ui_widget_focus.c \
 	$(NULL)
 
 

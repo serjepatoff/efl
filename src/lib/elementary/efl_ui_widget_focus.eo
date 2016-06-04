@@ -1,0 +1,10 @@
+mixin Efl.Ui.Widget.Focus(Efl.Ui.Widget.Focus.User, Elm.Widget)
+{
+    [[If you inherit from this, the elm widget will always register itself in the  upper manager based on the can_focus and disabled flag.
+    ]]
+    implements {
+        Eo.Base.constructor;
+        Elm.Widget.can_focus.set;
+        Elm.Widget.disabled.set;
+    }
+}

@@ -1,0 +1,15 @@
+interface Efl.Ui.Focus.Object
+{
+    [[Functions of focusable objects]]
+    methods {
+        @property manager {
+            [[Give the manager object of this widget]]
+            get {
+
+            }
+            values {
+                manager : Efl.Ui.Focus.Manager;
+            }
+        }
+    }
+}

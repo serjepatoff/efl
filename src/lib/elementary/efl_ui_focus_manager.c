@@ -509,6 +509,9 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
         if (!dir) return NULL;
      }
 
+
+   _elm_widget_focus_highlight_start(dir->focusable);
+
    //unfocus the old one for now ...
    elm_obj_widget_focused_object_clear(upper->focusable);
    elm_widget_focus_set(dir->focusable, EINA_TRUE);
@@ -522,6 +525,8 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
 EOLIAN static void
 _efl_ui_focus_manager_redirect_set(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Efl_Ui_Focus_Manager *redirect)
 {
+   if (pd->redirect == redirect) return;
+
    if (pd->redirect)
      eo_unref(pd->redirect);
 

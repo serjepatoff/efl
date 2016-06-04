@@ -510,7 +510,7 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
      }
 
    //unfocus the old one for now ...
-   elm_widget_focus_set(upper->focusable, EINA_FALSE);
+   elm_obj_widget_focused_object_clear(upper->focusable);
    elm_widget_focus_set(dir->focusable, EINA_TRUE);
 
 #ifdef DEBUG

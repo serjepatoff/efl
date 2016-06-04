@@ -4598,6 +4598,8 @@ _efl_ui_win_eo_base_constructor(Eo *obj, Efl_Ui_Win_Data *_pd)
     * really bad and hacky. Needs fixing. */
    _pd->manager = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
 
+   eo_event_callback_forwarder_add(_pd->manager, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, obj);
+
    eo_composite_attach(obj, _pd->manager);
 
    return obj;

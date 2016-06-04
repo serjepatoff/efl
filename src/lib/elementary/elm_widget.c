@@ -5817,11 +5817,8 @@ static Eina_Bool
 _parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
 {
    ELM_WIDGET_DATA_GET(event->object, pd);
-   Elm_Parent_Change *change = event->info;
    Eina_List *node;
    Elm_Widget *sobj;
-
-   printf("PARENT CHANGE %p\n", change);
 
    EINA_LIST_FOREACH(pd->subobjs, node, sobj)
      {

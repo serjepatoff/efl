@@ -94,7 +94,7 @@ enum Efl.Ui.Win.Indicator_Type
    legacy: efl_ui_win_indicator;
 
    type_unknown, [[Unknown indicator type]]
-   bg_opaque, [[The icon of indicator is opaque, the background of indicator is also opaque. 
+   bg_opaque, [[The icon of indicator is opaque, the background of indicator is also opaque.
                 The content of window is located the end of indicator.
                 The area of indicator and window content are not overlapped]]
    bg_transparent, [[The icon of indicator is opaque, but the background is transparent.
@@ -146,7 +146,7 @@ enum Efl.Ui.Win.Urgent_Mode
 class Efl.Ui.Win (Elm.Widget, Efl.Canvas, Elm.Interface.Atspi.Window,
                Elm.Interface.Atspi_Widget_Action, Efl.Pack,
                Efl.Input.State, Efl.Input.Interface, Efl.Screen,
-               Efl.Gfx.Size.Hint, Efl.Text)
+               Efl.Gfx.Size.Hint, Efl.Text, Efl.Ui.Focus.Manager)
 {
    legacy_prefix: elm_win;
    eo_prefix: efl_ui_win;

@@ -5,6 +5,7 @@
 #define ELM_INTERFACE_ATSPI_ACCESSIBLE_PROTECTED
 #define ELM_INTERFACE_ATSPI_WIDGET_ACTION_PROTECTED
 #define ELM_WIN_PROTECTED
+#define EO_BASE_BETA
 
 #include <Elementary.h>
 #include <Elementary_Cursor.h>
@@ -252,6 +253,7 @@ struct _Efl_Ui_Win_Data
    Eina_Bool    noblank : 1;
    Eina_Bool    theme_alpha : 1; /**< alpha value fetched by a theme. this has higher priority than application_alpha */
    Eina_Bool    application_alpha : 1; /**< alpha value set by an elm_win_alpha_set() api. this has lower priority than theme_alpha */
+   Efl_Ui_Focus_Manager *manager;
 };
 
 struct _Box_Item_Iterator
@@ -1624,22 +1626,28 @@ _key_action_move(Evas_Object *obj, const char *params)
 {
    const char *dir = params;
 
-   _elm_widget_focus_auto_show(obj);
-   if (!strcmp(dir, "previous"))
-     elm_widget_focus_cycle(obj, ELM_FOCUS_PREVIOUS);
-   else if (!strcmp(dir, "next"))
-     elm_widget_focus_cycle(obj, ELM_FOCUS_NEXT);
-   else if (!strcmp(dir, "left"))
-     elm_widget_focus_cycle(obj, ELM_FOCUS_LEFT);
-   else if (!strcmp(dir, "right"))
-     elm_widget_focus_cycle(obj, ELM_FOCUS_RIGHT);
-   else if (!strcmp(dir, "up"))
-     elm_widget_focus_cycle(obj, ELM_FOCUS_UP);
-   else if (!strcmp(dir, "down"))
-     elm_widget_focus_cycle(obj, ELM_FOCUS_DOWN);
-   else return EINA_FALSE;
+  if (!getenv("FOCUS_WORK"))
+    {
+       _elm_widget_focus_auto_show(obj);
+       if (!strcmp(dir, "previous"))
+         elm_widget_focus_cycle(obj, ELM_FOCUS_PREVIOUS);
+       else if (!strcmp(dir, "next"))
+         elm_widget_focus_cycle(obj, ELM_FOCUS_NEXT);
+       else if (!strcmp(dir, "left"))
+         elm_widget_focus_cycle(obj, ELM_FOCUS_LEFT);
+       else if (!strcmp(dir, "right"))
+         elm_widget_focus_cycle(obj, ELM_FOCUS_RIGHT);
+       else if (!strcmp(dir, "up"))
+         elm_widget_focus_cycle(obj, ELM_FOCUS_UP);
+       else if (!strcmp(dir, "down"))
+         elm_widget_focus_cycle(obj, ELM_FOCUS_DOWN);
+       else return EINA_FALSE;
 
-   return EINA_TRUE;
+
+       return EINA_TRUE;
+    }
+  else
+    return EINA_FALSE;
 }
 
 EOLIAN static Eina_Bool
@@ -2460,7 +2468,7 @@ _efl_ui_win_efl_canvas_group_group_del(Eo *obj, Efl_Ui_Win_Data *sd)
        DECREMENT_MODALITY()
      }
 
-   if ((sd->modal) && (sd->modal_count > 0)) 
+   if ((sd->modal) && (sd->modal_count > 0))
      ERR("Deleted modal win was blocked by another modal win which was created after creation of that win.");
 
    evas_object_event_callback_del_full(sd->edje,
@@ -3926,6 +3934,24 @@ _accel_is_gl(void)
    return EINA_FALSE;
 }
 
+static void
+_focus_movement(void *data, Evas *e, Evas_Object *obj, void *event_info)
+{
+   Evas_Event_Key_Down *down = event_info;
+   ELM_WIN_DATA_GET(data, pd);
+   Eo *r = NULL;
+
+   if (!strcmp(down->keyname, "Left"))
+     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_LEFT);
+   else if (!strcmp(down->keyname, "Right"))
+     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_RIGHT);
+   else if (!strcmp(down->keyname, "Up"))
+     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_UP);
+   else if (!strcmp(down->keyname, "Down"))
+     r = efl_ui_focus_manager_move(pd->manager, EFL_UI_FOCUS_DIRECTION_DOWN);
+}
+
+
 static Eo *
 _elm_win_finalize_internal(Eo *obj, Efl_Ui_Win_Data *sd, const char *name, Elm_Win_Type type)
 {
@@ -4529,8 +4555,20 @@ _elm_win_finalize_internal(Eo *obj, Efl_Ui_Win_Data *sd, const char *name, Elm_W
      elm_interface_atspi_window_created_signal_emit(obj);
 
    eo_event_callback_array_add(obj, _elm_win_evas_feed_fake_callbacks(), sd->evas);
+
    eo_event_callback_add(obj, EO_EVENT_CALLBACK_ADD, _win_event_add_cb, sd);
    eo_event_callback_add(obj, EO_EVENT_CALLBACK_DEL, _win_event_del_cb, sd);
+
+   if (!!getenv("FOCUS_WORK"))
+     {
+        evas_object_key_grab(sd->edje, "Right", 0, 0, EINA_TRUE);
+        evas_object_key_grab(sd->edje, "Left", 0, 0, EINA_TRUE);
+        evas_object_key_grab(sd->edje, "Up", 0, 0, EINA_TRUE);
+        evas_object_key_grab(sd->edje, "Down", 0, 0, EINA_TRUE);
+
+        evas_object_event_callback_add
+          (sd->edje, EVAS_CALLBACK_KEY_DOWN, _focus_movement, obj);
+     }
 
    evas_object_show(sd->edje);
 
@@ -4554,11 +4592,14 @@ _efl_ui_win_eo_base_finalize(Eo *obj, Efl_Ui_Win_Data *_pd)
 }
 
 EOLIAN static Eo *
-_efl_ui_win_eo_base_constructor(Eo *obj, Efl_Ui_Win_Data *_pd EINA_UNUSED)
+_efl_ui_win_eo_base_constructor(Eo *obj, Efl_Ui_Win_Data *_pd)
 {
    /* Do nothing. */
    /* XXX: We are calling the constructor chain from the finalizer. It's
     * really bad and hacky. Needs fixing. */
+   _pd->manager = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, NULL);
+
+   eo_composite_attach(obj, _pd->manager);
 
    return obj;
 }
@@ -5097,7 +5138,7 @@ _efl_ui_win_urgent_set(Eo *obj EINA_UNUSED, Efl_Ui_Win_Data *sd, Efl_Ui_Win_Urge
    Eina_Bool urgent_tmp = !!urgent;
 
    if (sd->urgent == urgent_tmp) return;
-   
+
    sd->urgent = urgent_tmp;
    TRAP(sd, urgent_set, urgent_tmp);
 #ifdef HAVE_ELEMENTARY_X

@@ -84,12 +84,11 @@ EOLIAN static Eo_Base *
 _efl_ui_widget_focus_eo_base_constructor(Eo *obj, Efl_Ui_Widget_Focus_Data *pd)
 {
    Eo *ret;
+   eo_event_callback_add(obj, ELM_WIDGET_EVENT_PARENT_CHANGED, _parent_changed, NULL);
 
    ret = eo_constructor(eo_super(obj, MY_SELF_REGISTERER));
 
    _parent_eval(obj);
-
-   eo_event_callback_add(obj, ELM_WIDGET_EVENT_PARENT_CHANGED, _parent_changed, NULL);
 
    return ret;
 }

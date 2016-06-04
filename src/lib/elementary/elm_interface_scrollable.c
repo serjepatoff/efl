@@ -2,6 +2,7 @@
 # include "elementary_config.h"
 #endif
 
+#define EO_BASE_BETA
 #include <Elementary.h>
 
 #include "elm_priv.h"
@@ -66,6 +67,7 @@ static void _elm_scroll_scroll_to_x_animator(void *data, const Eo_Event *event);
 static void _elm_scroll_bounce_y_animator(void *data, const Eo_Event *event);
 static void _elm_scroll_bounce_x_animator(void *data, const Eo_Event *event);
 static void _elm_scroll_momentum_animator(void *data, const Eo_Event *event);
+static void      _border_elements_dirty(Eo *obj);
 
 static double
 _round(double value, int pos)
@@ -3802,6 +3804,7 @@ _elm_scroll_pan_resized_cb(void *data,
               (sid->obj, NULL, NULL, &w, &h);
         sid->cb_func.content_viewport_resize(sid->obj, w, h);
      }
+   _border_elements_dirty(sid->obj);
 }
 
 /* even external pan objects get this */
@@ -3825,6 +3828,8 @@ _elm_scroll_pan_changed_cb(void *data, const Eo_Event *event EINA_UNUSED)
         sid->content_info.resized = EINA_TRUE;
         _elm_scroll_wanted_region_set(sid->obj);
      }
+
+   _border_elements_dirty(sid->obj);
 }
 
 static void
@@ -4470,6 +4475,198 @@ _elm_interface_scrollable_loop_get(Eo *obj EINA_UNUSED, Elm_Scrollable_Smart_Int
 {
    *loop_h = sid->loop_h;
    *loop_v = sid->loop_v;
+}
+
+static Eina_List*
+_find_viewport_items(Elm_Interface_Scrollable *obj, Elm_Scrollable_Smart_Interface_Data *pd)
+{
+   Eina_List *result = NULL;
+   Eina_Iterator *iter = efl_ui_focus_manager_border_elements_get(pd->focus.manager);
+   Elm_Widget *node;
+   Eina_Rectangle view, node_geom;
+
+   elm_interface_scrollable_content_viewport_geometry_get
+         (obj, &view.x, &view.y, &view.w, &view.h);
+
+   EINA_ITERATOR_FOREACH(iter, node)
+     {
+        evas_object_geometry_get(node, &node_geom.x, &node_geom.y, &node_geom.w, &node_geom.h);
+
+        if (eina_rectangle_intersection(&node_geom, &view))
+           {
+              result = eina_list_append(result, node);
+           }
+     }
+
+   return result;
+}
+
+static Eina_Bool
+_set_equal(Eina_List *a, Eina_List *b)
+{
+   Eina_List *node;
+   void *data;
+
+   if (eina_list_count(a) != eina_list_count(b)) return EINA_FALSE;
+
+   EINA_LIST_FOREACH(a, node, data)
+     {
+        if (!eina_list_data_find(b, data))
+          return EINA_FALSE;
+     }
+
+   return EINA_TRUE;
+}
+
+static void
+_update_border_elements(Elm_Interface_Scrollable *obj, Elm_Scrollable_Smart_Interface_Data *pd)
+{
+   Eina_List *items, *n;
+   Elm_Widget *node;
+
+   items = _find_viewport_items(obj, pd);
+
+   if (_set_equal(items, pd->focus.border_elements))
+     {
+        eina_list_free(items);
+        return;
+     }
+
+   EINA_LIST_FREE(pd->focus.border_elements, node)
+     efl_ui_focus_manager_unregister(pd->focus.old_manager, node);
+
+   pd->focus.border_elements = items;
+
+   EINA_LIST_FOREACH(pd->focus.border_elements, n, node)
+     efl_ui_focus_manager_register(pd->focus.old_manager, node);
+}
+
+static void
+_border_elements_dirty(Elm_Interface_Scrollable *obj)
+{
+   Elm_Scrollable_Smart_Interface_Data *pd;
+
+   pd = eo_data_scope_get(obj, MY_SCROLLABLE_INTERFACE);
+   pd->focus.dirty = EINA_TRUE;
+}
+
+static Eina_Bool
+_pre_flush(void *data, const Eo_Event *event)
+{
+   Elm_Scrollable_Smart_Interface_Data *pd;
+
+   pd = eo_data_scope_get(data, MY_SCROLLABLE_INTERFACE);
+
+   if (pd->focus.dirty)
+     {
+        _update_border_elements(data, pd);
+        pd->focus.dirty = EINA_FALSE;
+     }
+
+   //call this on ourself
+   eo_event_callback_call(data, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, NULL);
+
+   return EO_CALLBACK_CONTINUE;
+}
+
+static Eina_Bool
+_parent_changed(void *data, const Eo_Event *event)
+{
+   Efl_Ui_Focus_Manager *manager;
+   Eina_List *n;
+   Eo *obj;
+   Elm_Widget *node;
+   Elm_Scrollable_Smart_Interface_Data *pd;
+
+   obj = event->object;
+   pd = eo_data_scope_get(obj, MY_SCROLLABLE_INTERFACE);
+   manager = efl_ui_focus_object_manager_get(obj);
+
+   eo_event_callback_del(pd->focus.old_manager, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, _pre_flush, obj);
+   eo_event_callback_add(manager, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, _pre_flush, obj);
+
+   if (manager == pd->focus.old_manager) return EO_CALLBACK_CONTINUE;
+
+   EINA_LIST_FOREACH(pd->focus.border_elements, n, node)
+     {
+        efl_ui_focus_manager_unregister(pd->focus.old_manager, node);
+        efl_ui_focus_manager_register(manager, node);
+     }
+   pd->focus.old_manager = manager;
+   return EO_CALLBACK_CONTINUE;
+}
+
+
+EOLIAN static Eo *
+_elm_interface_scrollable_eo_base_constructor(Eo *obj, Elm_Scrollable_Smart_Interface_Data *pd)
+{
+   Eo *eo;
+
+   eo_event_callback_add(obj, ELM_WIDGET_EVENT_PARENT_CHANGED, _parent_changed, NULL);
+
+   eo = eo_constructor(eo_super(obj, MY_SCROLLABLE_INTERFACE));
+
+   pd->focus.manager = eo_add(EFL_UI_FOCUS_MANAGER_CLASS, obj);
+   eo_composite_attach(obj, pd->focus.manager);
+
+   pd->focus.old_manager = efl_ui_focus_object_manager_get(obj);
+
+   return eo;
+}
+
+EOLIAN static void
+_elm_interface_scrollable_eo_base_destructor(Eo *obj, Elm_Scrollable_Smart_Interface_Data *pd)
+{
+   eo_event_callback_del(pd->focus.old_manager, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, _pre_flush, obj);
+
+   eo_destructor(eo_super(obj, MY_SCROLLABLE_INTERFACE));
+}
+
+static Eina_Bool
+_focused(void *data, const Eo_Event *event)
+{
+   Efl_Ui_Focus_Manager *manager = efl_ui_focus_object_manager_get(data);
+   //set us as redirect
+   efl_ui_focus_manager_redirect_set(manager, data);
+
+   //TODO maybe bring them in ?
+
+   return EO_CALLBACK_CONTINUE;
+}
+
+EOLIAN static Eina_Bool
+_elm_interface_scrollable_efl_ui_focus_manager_register(Eo *obj, Elm_Scrollable_Smart_Interface_Data *pd, Eo_Base *child)
+{
+   eo_event_callback_add(child, ELM_WIDGET_EVENT_FOCUSED, _focused, obj);
+
+   pd->focus.dirty = EINA_TRUE;
+
+   return efl_ui_focus_manager_register(pd->focus.manager, child);
+}
+
+EOLIAN static void
+_elm_interface_scrollable_efl_ui_focus_manager_unregister(Eo *obj, Elm_Scrollable_Smart_Interface_Data *pd, Eo_Base *child)
+{
+   eo_event_callback_del(child, ELM_WIDGET_EVENT_FOCUSED, _focused, obj);
+
+   pd->focus.dirty = EINA_TRUE;
+
+   efl_ui_focus_manager_unregister(pd->focus.manager, child);
+}
+
+EOLIAN static Eo_Base *
+_elm_interface_scrollable_efl_ui_focus_manager_move(Eo *obj, Elm_Scrollable_Smart_Interface_Data *pd, Efl_Ui_Focus_Direction direction)
+{
+   Efl_Ui_Focus_Manager *manager = efl_ui_focus_object_manager_get(obj);
+   Eo_Base *result = NULL;
+
+   result = efl_ui_focus_manager_move(pd->focus.manager, direction);
+   if (result)
+     return result;
+
+   efl_ui_focus_manager_redirect_set(manager, NULL);
+
+   return efl_ui_focus_manager_move(manager, direction);
 }
 
 EOLIAN static void

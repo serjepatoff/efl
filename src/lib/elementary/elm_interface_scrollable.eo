@@ -42,7 +42,7 @@ enum Elm.Scroller.Movement_Block
 }
 
 
-mixin Elm.Interface_Scrollable(Efl.Ui.Scrollable, Efl.Canvas.Group)
+mixin Elm.Interface_Scrollable(Efl.Ui.Scrollable, Efl.Canvas.Group, Efl.Ui.Focus.Manager, Efl.Ui.Widget.Focus.User)
 {
    eo_prefix: elm_interface_scrollable;
    data: Elm_Scrollable_Smart_Interface_Data;
@@ -664,6 +664,11 @@ mixin Elm.Interface_Scrollable(Efl.Ui.Scrollable, Efl.Canvas.Group)
       class.constructor;
       Efl.Canvas.Group.group_add;
       Efl.Canvas.Group.group_del;
+      Eo.Base.constructor;
+      Eo.Base.destructor;
+      Efl.Ui.Focus.Manager.register;
+      Efl.Ui.Focus.Manager.move;
+      Efl.Ui.Focus.Manager.unregister;
    }
    events {
       changed;

@@ -26,31 +26,27 @@ typedef struct {
   Efl_Ui_Focus_Manager *old_manager;
 } Efl_Ui_Widget_Focus_Data;
 
-static Eina_Bool
-_parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
+static void
+_parent_eval(Eo *obj)
 {
-   REREGISTER_DATA_GET(event->object, pd);
+   REREGISTER_DATA_GET(obj, pd);
 
-   if (pd->old_manager != efl_ui_focus_object_manager_get(event->object))
+
+   if (pd->old_manager != efl_ui_focus_object_manager_get(obj))
      {
         if (pd->registered && pd->old_manager)
-          efl_ui_focus_manager_unregister(pd->old_manager, event->object);
+          efl_ui_focus_manager_unregister(pd->old_manager, obj);
 
-        pd->old_manager = efl_ui_focus_object_manager_get(event->object);
+        pd->old_manager = efl_ui_focus_object_manager_get(obj);
 
         if (pd->registered && pd->old_manager)
-          efl_ui_focus_manager_register(pd->old_manager, event->object);
+          {
+             efl_ui_focus_manager_register(pd->old_manager, obj);
+          }
      }
 
-   return EO_CALLBACK_CONTINUE;
 }
 
-EOLIAN static Eo_Base *
-_efl_ui_widget_focus_eo_base_constructor(Eo *obj, Efl_Ui_Widget_Focus_Data *pd EINA_UNUSED)
-{
-   eo_event_callback_add(obj, ELM_WIDGET_EVENT_PARENT_CHANGED, _parent_changed, NULL);
-   return eo_constructor(eo_super(obj, MY_SELF_REGISTERER));
-}
 
 static void
 _reeval(Eo *obj, Efl_Ui_Widget_Focus_Data *pd)
@@ -72,6 +68,30 @@ _reeval(Eo *obj, Efl_Ui_Widget_Focus_Data *pd)
           }
 
      }
+}
+
+
+static Eina_Bool
+_parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
+{
+   _parent_eval(event->object);
+
+   return EO_CALLBACK_CONTINUE;
+}
+
+
+EOLIAN static Eo_Base *
+_efl_ui_widget_focus_eo_base_constructor(Eo *obj, Efl_Ui_Widget_Focus_Data *pd)
+{
+   Eo *ret;
+
+   ret = eo_constructor(eo_super(obj, MY_SELF_REGISTERER));
+
+   _parent_eval(obj);
+
+   eo_event_callback_add(obj, ELM_WIDGET_EVENT_PARENT_CHANGED, _parent_changed, NULL);
+
+   return ret;
 }
 
 EOLIAN static void

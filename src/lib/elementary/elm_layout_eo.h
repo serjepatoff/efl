@@ -5,7 +5,7 @@
  */
 
 #include "elm_layout.eo.h"
-
+#include "elm_layout_focus.eo.h"
 /**
  * @}
  */

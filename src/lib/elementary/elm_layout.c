@@ -1890,7 +1890,7 @@ EAPI Evas_Object *
 elm_layout_add(Evas_Object *parent)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(parent, NULL);
-   Evas_Object *obj = eo_add(MY_CLASS, parent);
+   Evas_Object *obj = eo_add(ELM_LAYOUT_FOCUS_CLASS, parent);
    return obj;
 }
 
@@ -2038,3 +2038,9 @@ ELM_PART_IMPLEMENT_CONTENT_UNSET(elm_layout, ELM_LAYOUT, Elm_Layout_Smart_Data, 
 /* Efl.Part end */
 
 #include "elm_layout.eo.c"
+
+typedef struct {
+
+} Elm_Layout_Focus_Data;
+
+#include "elm_layout_focus.eo.c"

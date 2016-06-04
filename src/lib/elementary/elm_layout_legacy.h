@@ -242,3 +242,4 @@ EAPI Evas_Object *elm_layout_table_unpack(Evas_Object *obj, const char *part, Ev
 EAPI Eina_Bool elm_layout_table_clear(Evas_Object *obj, const char *part, Eina_Bool clear);
 
 #include "elm_layout.eo.legacy.h"
+#include "elm_layout_focus.eo.h"

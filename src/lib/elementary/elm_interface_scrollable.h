@@ -228,6 +228,7 @@ struct _Elm_Scrollable_Smart_Interface_Data
       Efl_Ui_Focus_Manager *manager;
       Efl_Ui_Focus_Manager *old_manager;
       Eina_List *border_elements;
+      Eo_Base *focus_candidate;
       Eina_Bool dirty;
    } focus;
 };

@@ -4518,27 +4518,50 @@ _set_equal(Eina_List *a, Eina_List *b)
    return EINA_TRUE;
 }
 
+static Eina_List*
+_a_without_b(Eina_List *a, Eina_List *b)
+{
+   Eina_List *a_out = NULL, *node;
+   void *data;
+
+   a_out = eina_list_clone(a);
+
+   EINA_LIST_FOREACH(b, node, data)
+     {
+        a_out = eina_list_remove(a_out, data);
+     }
+
+   return a_out;
+}
+
 static void
 _update_border_elements(Elm_Interface_Scrollable *obj, Elm_Scrollable_Smart_Interface_Data *pd)
 {
-   Eina_List *items, *n;
    Elm_Widget *node;
+   Eina_List *add_list, *del_list, *items;
 
    items = _find_viewport_items(obj, pd);
 
-   if (_set_equal(items, pd->focus.border_elements))
+   if (pd->focus.focus_candidate &&
+       !eina_list_data_find(items, pd->focus.focus_candidate))
      {
-        eina_list_free(items);
-        return;
+       items = eina_list_append(items, pd->focus.focus_candidate);
      }
 
-   EINA_LIST_FREE(pd->focus.border_elements, node)
-     efl_ui_focus_manager_unregister(pd->focus.old_manager, node);
+   add_list = _a_without_b(items, pd->focus.border_elements);
+   del_list = _a_without_b(pd->focus.border_elements, items);
 
+   EINA_LIST_FREE(del_list, node)
+     {
+        efl_ui_focus_manager_unregister(pd->focus.old_manager, node);
+     }
+   EINA_LIST_FREE(add_list, node)
+     {
+        efl_ui_focus_manager_register(pd->focus.old_manager, node);
+     }
+
+   pd->focus.border_elements = eina_list_free(pd->focus.border_elements);
    pd->focus.border_elements = items;
-
-   EINA_LIST_FOREACH(pd->focus.border_elements, n, node)
-     efl_ui_focus_manager_register(pd->focus.old_manager, node);
 }
 
 static void
@@ -4550,22 +4573,28 @@ _border_elements_dirty(Elm_Interface_Scrollable *obj)
    pd->focus.dirty = EINA_TRUE;
 }
 
-static Eina_Bool
-_pre_flush(void *data, const Eo_Event *event)
+static void
+_dirty_flush(Eo *obj)
 {
    Elm_Scrollable_Smart_Interface_Data *pd;
 
-   pd = eo_data_scope_get(data, MY_SCROLLABLE_INTERFACE);
+   pd = eo_data_scope_get(obj, MY_SCROLLABLE_INTERFACE);
 
    if (pd->focus.dirty)
      {
-        _update_border_elements(data, pd);
+        _update_border_elements(obj, pd);
         pd->focus.dirty = EINA_FALSE;
      }
 
    //call this on ourself
-   eo_event_callback_call(data, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, NULL);
+   eo_event_callback_call(obj, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, NULL);
 
+}
+
+static Eina_Bool
+_pre_flush(void *data, const Eo_Event *event)
+{
+   _dirty_flush(data);
    return EO_CALLBACK_CONTINUE;
 }
 
@@ -4625,14 +4654,13 @@ _elm_interface_scrollable_eo_base_destructor(Eo *obj, Elm_Scrollable_Smart_Inter
 static Eina_Bool
 _focused(void *data, const Eo_Event *event)
 {
-   Efl_Ui_Focus_Manager *manager = efl_ui_focus_object_manager_get(data);
    Eina_Rectangle geom, vp_geom;
    Elm_Scrollable_Smart_Interface_Data *pd;
 
    pd = eo_data_scope_get(data, MY_SCROLLABLE_INTERFACE);
 
    //set us as redirect
-   efl_ui_focus_manager_redirect_set(manager, data);
+   efl_ui_focus_manager_redirect_set(pd->focus.old_manager, data);
 
    evas_object_geometry_get(pd->content, &vp_geom.x, &vp_geom.y, &vp_geom.w, &vp_geom.h);
    evas_object_geometry_get(event->object, &geom.x, &geom.y, &geom.w, &geom.h);
@@ -4640,7 +4668,7 @@ _focused(void *data, const Eo_Event *event)
    geom.x -= vp_geom.x;
    geom.y -= vp_geom.y;
 
-   elm_interface_scrollable_region_bring_in(data, geom.x, geom.y, geom.w, geom.h);
+   elm_interface_scrollable_content_region_show(data, geom.x, geom.y, geom.w, geom.h);
 
    return EO_CALLBACK_CONTINUE;
 }
@@ -4668,16 +4696,29 @@ _elm_interface_scrollable_efl_ui_focus_manager_unregister(Eo *obj, Elm_Scrollabl
 EOLIAN static Eo_Base *
 _elm_interface_scrollable_efl_ui_focus_manager_move(Eo *obj, Elm_Scrollable_Smart_Interface_Data *pd, Efl_Ui_Focus_Direction direction)
 {
-   Efl_Ui_Focus_Manager *manager = efl_ui_focus_object_manager_get(obj);
    Eo_Base *result = NULL;
 
+   result = efl_ui_focus_manager_request_move(pd->focus.manager, direction);
+
+   if (!result)
+     {
+        //fallback solution if we dont know where to go in our subgrapg
+        efl_ui_focus_manager_redirect_set(pd->focus.old_manager, NULL);
+        result = efl_ui_focus_manager_move(pd->focus.old_manager, direction);
+     }
+
+   //we have a set of items which are likly to get focued now, mark them in the manager
+   pd->focus.focus_candidate = result;
+   pd->focus.dirty = EINA_TRUE;
+   _dirty_flush(obj);
+
    result = efl_ui_focus_manager_move(pd->focus.manager, direction);
-   if (result)
-     return result;
 
-   efl_ui_focus_manager_redirect_set(manager, NULL);
+   //after here the focus candidate is in so unset it
+   pd->focus.focus_candidate = result;
+   pd->focus.dirty = EINA_FALSE;
 
-   return efl_ui_focus_manager_move(manager, direction);
+   return result;
 }
 
 EOLIAN static void

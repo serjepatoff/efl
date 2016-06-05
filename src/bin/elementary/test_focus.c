@@ -299,13 +299,19 @@ test_focus(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_inf
 
                   for (i = 5; i; i--)
                     {
+                       Eina_Strbuf *buf;
                        Evas_Object *bt;
+
+                       buf = eina_strbuf_new();
+                       eina_strbuf_append_printf(buf, "BX Scroller %d", i);
+
                        bt = elm_button_add(win);
-                       elm_object_text_set(bt, "BX Scroller");
+                       elm_object_text_set(bt, eina_strbuf_string_get(buf));
                        evas_object_size_hint_align_set(bt, EVAS_HINT_FILL,
                                                        EVAS_HINT_FILL);
                        evas_object_size_hint_weight_set(bt, 0.0, 0.0);
                        elm_box_pack_end(bx3, bt);
+                       eina_strbuf_free(buf);
                        my_show(bt);
                     }
                }

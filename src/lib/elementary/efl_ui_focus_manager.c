@@ -358,8 +358,8 @@ dirty_flush(Efl_Ui_Focus_Manager *obj, Efl_Ui_Focus_Manager_Data *pd)
 static void
 dirty_add(Efl_Ui_Focus_Manager_Data *pd, Node *dirty)
 {
-   if (eina_list_data_find(pd->dirty, dirty)) return;
-
+   //if (eina_list_data_find(pd->dirty, dirty)) return;
+   pd->dirty = eina_list_remove(pd->dirty, dirty);
    pd->dirty = eina_list_append(pd->dirty, dirty);
 }
 

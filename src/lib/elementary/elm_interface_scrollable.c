@@ -4705,6 +4705,8 @@ _elm_interface_scrollable_efl_ui_focus_manager_move(Eo *obj, Elm_Scrollable_Smar
         //fallback solution if we dont know where to go in our subgrapg
         efl_ui_focus_manager_redirect_set(pd->focus.old_manager, NULL);
         result = efl_ui_focus_manager_move(pd->focus.old_manager, direction);
+
+        return result;
      }
 
    //we have a set of items which are likly to get focued now, mark them in the manager

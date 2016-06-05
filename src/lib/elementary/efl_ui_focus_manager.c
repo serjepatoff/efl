@@ -497,6 +497,10 @@ _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, E
 
    elm_widget_focus_set(dir->focusable, EINA_TRUE);
 
+   //sometimes widgets are swallowing the events or not calling them, workarround that by setting this on the stack
+   pd->focus_stack = eina_list_remove(pd->focus_stack, dir);
+   pd->focus_stack = eina_list_append(pd->focus_stack, dir);
+
 #ifdef DEBUG
    printf("Focus, MOVE %s %s\n", elm_widget_part_text_get(dir->focusable, NULL), elm_widget_type_get(dir->focusable));
 #endif

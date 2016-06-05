@@ -458,6 +458,18 @@ _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data 
    //delete again from the list, for the case it was not at the top
    pd->focus_stack = eina_list_remove(pd->focus_stack, node);
 
+   //add all neighboors of the node to the dirty list
+   for(int i = 0; i < 4; i++)
+     {
+        Node *partner;
+        Eina_List *n;
+
+        EINA_LIST_FOREACH(node->directions[i].partners, n, partner)
+          {
+             dirty_add(pd, partner);
+          }
+     }
+
    //remove from the dirty parts
    pd->dirty = eina_list_remove(pd->dirty, node);
 

@@ -386,6 +386,8 @@ _focus_in_cb(void *data, const Eo_Event *event)
 
    node = node_get(pd, event->object);
 
+   if (!node) return EO_CALLBACK_CONTINUE;
+
    old_focus = eina_list_last_data_get(pd->focus_stack);
 
    if (old_focus && old_focus->focusable == event->object)

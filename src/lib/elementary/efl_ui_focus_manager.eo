@@ -32,6 +32,13 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
             }
             return : iterator<Eo.Base>;
         }
+        request_move {
+            [[Simulates a move, without setting the focus new]]
+            params {
+                direction : Efl.Ui.Focus.Direction;
+            }
+            return : Eo.Base;
+        }
         register {
             [[Register a new item in the graph
 

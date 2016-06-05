@@ -467,55 +467,22 @@ _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data 
 EOLIAN static Elm_Widget*
 _efl_ui_focus_manager_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Efl_Ui_Focus_Direction direction)
 {
-   Node *upper = NULL, *candidate, *dir = NULL;
-   Eina_List *node;
+   Node *dir, *upper;
+   Elm_Widget *candidate;
 
-   dirty_flush(obj, pd);
+   candidate = efl_ui_focus_manager_request_move(obj, direction);
+   dir = node_get(pd, candidate);
 
-   if (pd->redirect)
-     return efl_ui_focus_manager_move(pd->redirect, direction);
-
-   upper = eina_list_last_data_get(pd->focus_stack);
-
-   if (!upper)
-     {
-        //select a item from the graph
-        Eina_Iterator *iter;
-
-        iter = eina_hash_iterator_data_new(pd->node_hash);
-
-        if (!eina_iterator_next(iter, (void**)&upper))
-          return NULL;
-
-        eina_iterator_free(iter);
-     }
-
-#ifdef DEBUG
-   _debug_node(upper);
-#endif
-
-   //we are searcing which of the partners is lower to the history
-   EINA_LIST_REVERSE_FOREACH(pd->focus_stack, node, candidate)
-     {
-        if (eina_list_data_find(upper->directions[direction].partners, candidate))
-          {
-             //this is the next accessable part
-             dir = candidate;
-             break;
-          }
-     }
-
-   if (!dir)
-     {
-        dir = eina_list_data_get(upper->directions[direction].partners);
-        if (!dir) return NULL;
-     }
+   if (!dir) return NULL;
 
    _elm_widget_focus_auto_show(dir->focusable);
    _elm_widget_focus_highlight_start(dir->focusable);
 
    //unfocus the old one for now ...
-   elm_obj_widget_focused_object_clear(upper->focusable);
+   upper = eina_list_last_data_get(pd->focus_stack);
+   if (upper)
+     elm_obj_widget_focused_object_clear(upper->focusable);
+
    elm_widget_focus_set(dir->focusable, EINA_TRUE);
 
 #ifdef DEBUG
@@ -642,20 +609,71 @@ _efl_ui_focus_manager_border_elements_get(Eo *obj, Efl_Ui_Focus_Manager_Data *pd
 EOLIAN static Eina_Iterator*
 _efl_ui_focus_manager_request(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Eo_Base *child, Efl_Ui_Focus_Direction direction)
 {
-   Node *node;
-
+   Node *node, *partners;
+   Eina_List *raw = NULL, *n;
    if (!child)
      node = eina_list_last_data_get(pd->focus_stack);
    else
      node = node_get(pd, child);
 
-
    if (!node) return NULL;
 
-   return eina_list_iterator_new(node->directions[direction].partners);
+   EINA_LIST_FOREACH(node->directions[direction].partners, n, partners)
+     raw = eina_list_append(raw, partners->focusable);
+
+
+   return eina_list_iterator_new(raw);
 }
 
+EOLIAN static Elm_Widget*
+_efl_ui_focus_manager_request_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Efl_Ui_Focus_Direction direction)
+{
+   Node *upper = NULL, *candidate, *dir = NULL;
+   Eina_List *node;
 
+   dirty_flush(obj, pd);
+
+   if (pd->redirect)
+     return efl_ui_focus_manager_move(pd->redirect, direction);
+
+   upper = eina_list_last_data_get(pd->focus_stack);
+
+   if (!upper)
+     {
+        //select a item from the graph
+        Eina_Iterator *iter;
+
+        iter = eina_hash_iterator_data_new(pd->node_hash);
+
+        if (!eina_iterator_next(iter, (void**)&upper))
+          return NULL;
+
+        eina_iterator_free(iter);
+     }
+
+#ifdef DEBUG
+   _debug_node(upper);
+#endif
+
+   //we are searcing which of the partners is lower to the history
+   EINA_LIST_REVERSE_FOREACH(pd->focus_stack, node, candidate)
+     {
+        if (eina_list_data_find(upper->directions[direction].partners, candidate))
+          {
+             //this is the next accessable part
+             dir = candidate;
+             break;
+          }
+     }
+
+   if (!dir)
+     {
+        dir = eina_list_data_get(upper->directions[direction].partners);
+        if (!dir) return NULL;
+     }
+
+   return dir->focusable;
+}
 
 
 #include "efl_ui_focus_manager.eo.c"

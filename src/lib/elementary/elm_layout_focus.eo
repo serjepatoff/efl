@@ -1,0 +1,4 @@
+class Elm.Layout.Focus(Elm.Layout, Efl.Ui.Widget.Focus)
+{
+
+}

@@ -2864,12 +2864,12 @@ have_rsvg="no"
 
 ### Check needed dependency for each generic loader
 if test "x${want_poppler}" = "xyes"; then
-   PKG_CHECK_MODULES([POPPLER], [poppler >= 0.12], [have_poppler="yes"])
+   PKG_CHECK_MODULES([POPPLER], [poppler-cpp >= 0.12], [have_poppler="yes"])
 
-   PKG_CHECK_EXISTS([poppler >= 0.20],
+   PKG_CHECK_EXISTS([poppler-cpp >= 0.20],
                     [AC_DEFINE(HAVE_POPPLER_020, 1, [Have poppler at least 0.20])])
 
-   PKG_CHECK_EXISTS([poppler >= 0.31],
+   PKG_CHECK_EXISTS([poppler-cpp >= 0.31],
                     [AC_DEFINE(HAVE_POPPLER_031, 1, [Have poppler at least 0.31])])
 fi
 
@@ -5948,7 +5948,7 @@ echo "Ethumb..........: yes"
 echo "Ethumb_Client...: yes"
 echo "Elua............: $have_elua"
 echo "Elementary......: yes (${features_elementary})"
-echo 
+echo
 
 echo
 

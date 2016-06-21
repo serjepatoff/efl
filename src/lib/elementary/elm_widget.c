@@ -811,7 +811,7 @@ _elm_widget_focus_region_show(const Eo *obj, Elm_Widget_Smart_Data *_pd EINA_UNU
              Evas_Coord sx, sy;
              elm_interface_scrollable_content_region_get(o, &sx, &sy, NULL, NULL);
 
-             // Get the object's on_focus_region position relative to the scroller. 
+             // Get the object's on_focus_region position relative to the scroller.
              Evas_Coord rx, ry;
              rx = ox + x - px + sx;
              ry = oy + y - py + sy;
@@ -5813,7 +5813,7 @@ elm_widget_tree_dot_dump(const Evas_Object *top,
 #endif
 }
 
-static Eina_Bool
+static void
 _parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
 {
    ELM_WIDGET_DATA_GET(event->object, pd);
@@ -5824,8 +5824,6 @@ _parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
      {
         eo_event_callback_call(sobj, ELM_WIDGET_EVENT_PARENT_CHANGED, event->info);
      }
-
-   return EO_CALLBACK_CONTINUE;
 }
 
 EOLIAN static Eo *

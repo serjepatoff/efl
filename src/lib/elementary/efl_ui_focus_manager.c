@@ -364,7 +364,7 @@ dirty_add(Efl_Ui_Focus_Manager_Data *pd, Node *dirty)
 }
 
 
-static Eina_Bool
+static void
 _node_new_geometery_cb(void *data, const Eo_Event *event)
 {
    Node *node;
@@ -374,10 +374,10 @@ _node_new_geometery_cb(void *data, const Eo_Event *event)
 
    dirty_add(pd, node);
 
-   return EO_CALLBACK_CONTINUE;
+   return;
 }
 
-static Eina_Bool
+static void
 _focus_in_cb(void *data, const Eo_Event *event)
 {
    Node *node;
@@ -386,35 +386,32 @@ _focus_in_cb(void *data, const Eo_Event *event)
 
    node = node_get(pd, event->object);
 
-   if (!node) return EO_CALLBACK_CONTINUE;
+   if (!node) return;
 
    old_focus = eina_list_last_data_get(pd->focus_stack);
 
    if (old_focus && old_focus->focusable == event->object)
      {
         //dont do anything here, this means another node unfocused while at the top of stack
-        return EO_CALLBACK_CONTINUE;
+        return;
      }
 
    //remove the object from the list and add it again
    pd->focus_stack = eina_list_remove(pd->focus_stack, node);
    pd->focus_stack = eina_list_append(pd->focus_stack, node);
-
-   return EO_CALLBACK_CONTINUE;
 }
 
-static Eina_Bool
+static void
 _child_del(void *data, const Eo_Event *event)
 {
    WRN("The manager itself catched a deletion of a child. BAD");
    efl_ui_focus_manager_unregister(data, event->object);
-   return EO_CALLBACK_CONTINUE;
 }
 
 EO_CALLBACKS_ARRAY_DEFINE(focusable_node,
     {EO_EVENT_DEL, _child_del},
-    {EVAS_OBJECT_EVENT_RESIZE, _node_new_geometery_cb},
-    {EVAS_OBJECT_EVENT_MOVE, _node_new_geometery_cb},
+    {EFL_GFX_EVENT_RESIZE, _node_new_geometery_cb},
+    {EFL_GFX_EVENT_MOVE, _node_new_geometery_cb},
     {ELM_WIDGET_EVENT_FOCUSED, _focus_in_cb}
 );
 

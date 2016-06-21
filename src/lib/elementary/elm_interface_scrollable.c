@@ -4591,14 +4591,13 @@ _dirty_flush(Eo *obj)
 
 }
 
-static Eina_Bool
+static void
 _pre_flush(void *data, const Eo_Event *event)
 {
    _dirty_flush(data);
-   return EO_CALLBACK_CONTINUE;
 }
 
-static Eina_Bool
+static void
 _parent_changed(void *data, const Eo_Event *event)
 {
    Efl_Ui_Focus_Manager *manager;
@@ -4614,7 +4613,7 @@ _parent_changed(void *data, const Eo_Event *event)
    eo_event_callback_del(pd->focus.old_manager, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, _pre_flush, obj);
    eo_event_callback_add(manager, EFL_UI_FOCUS_MANAGER_EVENT_PRE_FLUSH, _pre_flush, obj);
 
-   if (manager == pd->focus.old_manager) return EO_CALLBACK_CONTINUE;
+   if (manager == pd->focus.old_manager) return;
 
    EINA_LIST_FOREACH(pd->focus.border_elements, n, node)
      {
@@ -4622,7 +4621,6 @@ _parent_changed(void *data, const Eo_Event *event)
         efl_ui_focus_manager_register(manager, node);
      }
    pd->focus.old_manager = manager;
-   return EO_CALLBACK_CONTINUE;
 }
 
 
@@ -4651,7 +4649,7 @@ _elm_interface_scrollable_eo_base_destructor(Eo *obj, Elm_Scrollable_Smart_Inter
    eo_destructor(eo_super(obj, MY_SCROLLABLE_INTERFACE));
 }
 
-static Eina_Bool
+static void
 _focused(void *data, const Eo_Event *event)
 {
    Eina_Rectangle geom, vp_geom;
@@ -4669,8 +4667,6 @@ _focused(void *data, const Eo_Event *event)
    geom.y -= vp_geom.y;
 
    elm_interface_scrollable_content_region_show(data, geom.x, geom.y, geom.w, geom.h);
-
-   return EO_CALLBACK_CONTINUE;
 }
 
 EOLIAN static Eina_Bool

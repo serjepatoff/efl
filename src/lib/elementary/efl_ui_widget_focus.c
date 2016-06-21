@@ -71,12 +71,10 @@ _reeval(Eo *obj, Efl_Ui_Widget_Focus_Data *pd)
 }
 
 
-static Eina_Bool
+static void
 _parent_changed(void *data EINA_UNUSED, const Eo_Event *event)
 {
    _parent_eval(event->object);
-
-   return EO_CALLBACK_CONTINUE;
 }
 
 
@@ -128,7 +126,7 @@ _find_focus_manager(Eo *obj)
    return NULL;
 }
 
-static Eina_Bool
+static void
 _parent_changed_focus_user(void *data EINA_UNUSED, const Eo_Event *info)
 {
    USER_DATA_GET(info->object, pd);
@@ -136,7 +134,7 @@ _parent_changed_focus_user(void *data EINA_UNUSED, const Eo_Event *info)
 
    manager = _find_focus_manager(info->object);
 
-   if (manager == pd->manager) return EO_CALLBACK_CONTINUE;
+   if (manager == pd->manager) return;
    if (!manager)
      {
         ERR("Failed to find a manager");
@@ -144,8 +142,6 @@ _parent_changed_focus_user(void *data EINA_UNUSED, const Eo_Event *info)
 
    //search the next higher focus manager
    pd->manager = manager;
-
-   return EO_CALLBACK_CONTINUE;
 }
 
 EOLIAN static Efl_Ui_Focus_Manager *

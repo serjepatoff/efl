@@ -49,6 +49,17 @@ class Efl.Ui.Focus.Manager (Eo.Base) {
             }
             return : bool; [[$true if it was successfull $false if not]]
         }
+        listener {
+            [[This child will be placed in the right left top down relation graph.
+              Once it is focused the manager object will be setted as redirect.
+              Use unregister to unlisten this child.
+              Calling this again will update the redirect object]]
+            params {
+                child : Eo.Base;
+                redirect : Efl.Ui.Focus.Manager; [[Once $child got focused this element will be set as redirect]]
+            }
+            return : bool;
+        }
         unregister {
             [[unregister the given item from the graph]]
             params {

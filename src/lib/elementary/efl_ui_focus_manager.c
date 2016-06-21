@@ -36,6 +36,7 @@ struct _Node {
 typedef struct {
     Eina_List *focus_stack;
     Eina_Hash *node_hash;
+    Eina_Hash *listener_hash;
     Efl_Ui_Focus_Manager *redirect;
 
     Eina_List *dirty;
@@ -417,20 +418,30 @@ EO_CALLBACKS_ARRAY_DEFINE(focusable_node,
 
 //=============================
 
-
-EOLIAN static Eina_Bool
-_efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Object *child)
+static Node*
+_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Eo *child)
 {
    Node *node;
-
    if (node_get(pd, child))
      {
         ERR("Child %p is already registered in the graph", child);
-        return EINA_FALSE;
+        return NULL;
      }
 
    node = node_new(child, obj);
    eina_hash_add(pd->node_hash, &child, node);
+
+
+   return node;
+}
+
+
+EOLIAN static Eina_Bool
+_efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Object *child)
+{
+   Node *node = _register(obj, pd, child);
+
+   if (!node) return EINA_FALSE;
 
    //mark dirty
    dirty_add(pd, node);
@@ -441,11 +452,43 @@ _efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Obje
    return EINA_TRUE;
 }
 
+static void
+_listener_focus(void *data, const Eo_Event *info)
+{
+   Efl_Ui_Focus_Manager *manager;
+   FOCUS_DATA(data);
+
+   manager = eina_hash_find(pd->listener_hash, &info->object);
+
+   efl_ui_focus_manager_redirect_set(data, manager);
+}
+
+EOLIAN static Eina_Bool
+_efl_ui_focus_manager_listener(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Eo_Base *child, Efl_Ui_Focus_Manager *redirect)
+{
+   Node *node = _register(obj, pd, child);
+   Efl_Ui_Focus_Manager *manager;
+
+   if (!node) return EINA_FALSE;
+
+   //mark dirty
+   dirty_add(pd, node);
+
+   manager = eina_hash_find(pd->listener_hash, &child);
+   eina_hash_add(pd->listener_hash, &child, redirect);
+
+   if (!manager)
+     eo_event_callback_add(child, ELM_WIDGET_EVENT_FOCUSED, _listener_focus, obj);
+
+   return EINA_TRUE;
+}
+
 
 EOLIAN static void
 _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Evas_Object *child)
 {
    Node *node;
+   Efl_Ui_Focus_Manager *manager;
 
    node = node_get(pd, child);
 
@@ -471,6 +514,17 @@ _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data 
 
    //remove from the dirty parts
    pd->dirty = eina_list_remove(pd->dirty, node);
+
+   manager = eina_hash_find(pd->listener_hash, &child);
+
+   if (manager)
+     {
+        //this is a listener element
+        eo_event_callback_add(child, ELM_WIDGET_EVENT_FOCUSED, _listener_focus, obj);
+
+        //remove from known listeners
+        eina_hash_del_by_key(pd->listener_hash, &child);
+     }
 
    eina_hash_del_by_key(pd->node_hash, &child);
 }
@@ -539,6 +593,7 @@ EOLIAN static Eo_Base *
 _efl_ui_focus_manager_eo_base_constructor(Eo *obj, Efl_Ui_Focus_Manager_Data *pd)
 {
    pd->node_hash = eina_hash_pointer_new(_free_node);
+   pd->listener_hash = eina_hash_pointer_new(NULL);
    return eo_constructor(eo_super(obj, MY_CLASS));
 }
 

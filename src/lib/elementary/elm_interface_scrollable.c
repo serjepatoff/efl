@@ -4557,7 +4557,7 @@ _update_border_elements(Elm_Interface_Scrollable *obj, Elm_Scrollable_Smart_Inte
      }
    EINA_LIST_FREE(add_list, node)
      {
-        efl_ui_focus_manager_register(pd->focus.old_manager, node);
+        efl_ui_focus_manager_listener(pd->focus.old_manager, node, obj);
      }
 
    pd->focus.border_elements = eina_list_free(pd->focus.border_elements);
@@ -4656,9 +4656,6 @@ _focused(void *data, const Eo_Event *event)
    Elm_Scrollable_Smart_Interface_Data *pd;
 
    pd = eo_data_scope_get(data, MY_SCROLLABLE_INTERFACE);
-
-   //set us as redirect
-   efl_ui_focus_manager_redirect_set(pd->focus.old_manager, data);
 
    evas_object_geometry_get(pd->content, &vp_geom.x, &vp_geom.y, &vp_geom.w, &vp_geom.h);
    evas_object_geometry_get(event->object, &geom.x, &geom.y, &geom.w, &geom.h);

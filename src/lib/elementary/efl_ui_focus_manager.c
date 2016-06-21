@@ -27,10 +27,13 @@ struct _Border {
 };
 
 typedef struct _Node Node;
+
 struct _Node {
     Elm_Widget *focusable;
     Border directions[NODE_DIRECTIONS_COUNT];
     Efl_Ui_Focus_Manager *manager;
+    Node *next;
+    Node *prev;
 };
 
 typedef struct {
@@ -40,6 +43,8 @@ typedef struct {
     Efl_Ui_Focus_Manager *redirect;
 
     Eina_List *dirty;
+
+    Node *last_node;
 } Efl_Ui_Focus_Manager_Data;
 
 static Efl_Ui_Focus_Direction
@@ -124,6 +129,38 @@ node_item_free(Node *item)
 
 //CALCULATING STUFF
 
+// Append current Object to Focus Chain
+static void
+efl_ui_focus_chain_append(Efl_Ui_Focus_Manager_Data *pd, Node *prev, Node *current)
+{
+  if (!current)
+    {
+      CRI("Appending NULL Object!!");
+      return;
+    }
+  if (prev)
+    {
+      prev->next = current;
+      current->prev = prev;
+    }
+  pd->last_node = current;
+}
+// Remove  current Object to Focus Chain
+static void
+efl_ui_focus_chain_remove(Efl_Ui_Focus_Manager_Data *pd, Node *current)
+{
+  if (!current)
+    {
+      CRI("Removing NULL Object!!");
+      return;
+    }
+  if (current->prev)
+    current->prev->next = current->next;
+  if (current->next)
+    current->next->prev = current->prev;
+  else
+    pd->last_node = current->prev;
+}
 static inline int
 _distance(Eina_Rectangle node, Eina_Rectangle op, Dimension dim)
 {
@@ -446,6 +483,9 @@ _efl_ui_focus_manager_register(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Evas_Obje
    //mark dirty
    dirty_add(pd, node);
 
+   //update next/prev links
+   efl_ui_focus_chain_append(pd, pd->last_node, node);
+
    //listen to events
    eo_event_callback_array_add(child, focusable_node(), obj);
 
@@ -482,7 +522,6 @@ _efl_ui_focus_manager_listener(Eo *obj, Efl_Ui_Focus_Manager_Data *pd, Eo_Base *
 
    return EINA_TRUE;
 }
-
 
 EOLIAN static void
 _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data *pd, Evas_Object *child)
@@ -524,6 +563,11 @@ _efl_ui_focus_manager_unregister(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Data 
 
         //remove from known listeners
         eina_hash_del_by_key(pd->listener_hash, &child);
+     }
+   else
+     {
+        //update next/prev links
+        efl_ui_focus_chain_remove(pd, node);
      }
 
    eina_hash_del_by_key(pd->node_hash, &child);
@@ -724,6 +768,20 @@ _efl_ui_focus_manager_request_move(Eo *obj EINA_UNUSED, Efl_Ui_Focus_Manager_Dat
 #ifdef DEBUG
    _debug_node(upper);
 #endif
+
+   //for Handling Tab and SHIFT + tab movements.
+   if (direction == EFL_UI_FOCUS_DIRECTION_NEXT)
+     {
+       if (upper->next)
+         return upper->next->focusable;
+       return NULL;
+     }
+   else if (direction == EFL_UI_FOCUS_DIRECTION_PREV)
+     {
+       if (upper->prev)
+         return upper->prev->focusable;
+       return NULL;
+     }
 
    //we are searcing which of the partners is lower to the history
    EINA_LIST_REVERSE_FOREACH(pd->focus_stack, node, candidate)

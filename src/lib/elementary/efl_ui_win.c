@@ -1625,7 +1625,6 @@ static Eina_Bool
 _key_action_move(Evas_Object *obj, const char *params)
 {
    const char *dir = params;
-
   if (!getenv("FOCUS_WORK"))
     {
        _elm_widget_focus_auto_show(obj);
@@ -1642,7 +1641,6 @@ _key_action_move(Evas_Object *obj, const char *params)
        else if (!strcmp(dir, "down"))
          elm_widget_focus_cycle(obj, ELM_FOCUS_DOWN);
        else return EINA_FALSE;
-
 
        return EINA_TRUE;
     }
@@ -3948,8 +3946,15 @@ _focus_movement(void *data, Evas *e, Evas_Object *obj, void *event_info)
      r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_UP);
    else if (!strcmp(down->keyname, "Down"))
      r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_DOWN);
+   else if (!strcmp(down->keyname, "Tab"))
+     {
+       const Evas_Modifier *m = evas_key_modifier_get(e);
+       if (evas_key_modifier_is_set(m, "Shift"))
+         r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_PREV);
+       else
+         r = efl_ui_focus_manager_move(data, EFL_UI_FOCUS_DIRECTION_NEXT);
+     }
 }
-
 
 static Eo *
 _elm_win_finalize_internal(Eo *obj, Efl_Ui_Win_Data *sd, const char *name, Elm_Win_Type type)
@@ -4564,7 +4569,9 @@ _elm_win_finalize_internal(Eo *obj, Efl_Ui_Win_Data *sd, const char *name, Elm_W
         evas_object_key_grab(sd->edje, "Left", 0, 0, EINA_TRUE);
         evas_object_key_grab(sd->edje, "Up", 0, 0, EINA_TRUE);
         evas_object_key_grab(sd->edje, "Down", 0, 0, EINA_TRUE);
-
+        evas_object_key_grab(sd->edje, "Tab", 0, 0, EINA_TRUE);
+        evas_object_key_grab(sd->edje, "Shift_L", 0, 0, EINA_TRUE);
+        evas_object_key_grab(sd->edje, "Shift_R", 0, 0, EINA_TRUE);
         evas_object_event_callback_add
           (sd->edje, EVAS_CALLBACK_KEY_DOWN, _focus_movement, obj);
      }

@@ -3659,17 +3659,12 @@ _wl_dnd_receive(void *data, int type EINA_UNUSED, void *event)
 
    if (sel->requestwidget)
      {
-        if (!ev->done)
-          {
-             _wl_dropable_data_handle(sel, ev);
-          }
-        else
-          {
-             evas_object_event_callback_del_full(sel->requestwidget,
-                                                 EVAS_CALLBACK_DEL,
-                                                 _wl_sel_obj_del2, sel);
-             sel->requestwidget = NULL;
-          }
+           _wl_dropable_data_handle(sel, ev);
+           evas_object_event_callback_del_full(sel->requestwidget,
+                                               EVAS_CALLBACK_DEL,
+                                               _wl_sel_obj_del2, sel);
+           sel->requestwidget = NULL;
+
      }
 
    return ECORE_CALLBACK_PASS_ON;

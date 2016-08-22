@@ -3557,6 +3557,8 @@ fi
 ### Checks for programs
 
 ### Checks for libraries
+EFL_ADD_PUBLIC_PC([ECORE_WAYLAND], [xkbcommon >= 0.5.0])
+
 EFL_INTERNAL_DEPEND_PKG([ECORE_WAYLAND], [ecore-input])
 EFL_INTERNAL_DEPEND_PKG([ECORE_WAYLAND], [ecore])
 EFL_INTERNAL_DEPEND_PKG([ECORE_WAYLAND], [eo])
@@ -3597,6 +3599,8 @@ fi
 ### Checks for programs
 
 ### Checks for libraries
+EFL_ADD_PUBLIC_PC([ECORE_WL2], [xkbcommon >= 0.6.0])
+
 EFL_INTERNAL_DEPEND_PKG([ECORE_WL2], [ecore-input])
 EFL_INTERNAL_DEPEND_PKG([ECORE_WL2], [ecore])
 EFL_INTERNAL_DEPEND_PKG([ECORE_WL2], [eo])
@@ -3677,6 +3681,9 @@ AC_SUBST([SUID_LDFLAGS])
 ### Checks for programs
 
 ### Checks for libraries
+
+EFL_ADD_PUBLIC_PC([ECORE_DRM], [xkbcommon >= 0.3.0])
+
 EFL_INTERNAL_DEPEND_PKG([ECORE_DRM], [ecore])
 EFL_INTERNAL_DEPEND_PKG([ECORE_DRM], [ecore-input])
 EFL_INTERNAL_DEPEND_PKG([ECORE_DRM], [eldbus])
@@ -3737,6 +3744,8 @@ AC_SUBST([SUID_LDFLAGS])
 ### Checks for programs
 
 ### Checks for libraries
+EFL_ADD_PUBLIC_PC([ELPUT], [xkbcommon >= 0.3.0])
+
 EFL_INTERNAL_DEPEND_PKG([ELPUT], [ecore])
 EFL_INTERNAL_DEPEND_PKG([ELPUT], [ecore-input])
 EFL_INTERNAL_DEPEND_PKG([ELPUT], [eldbus])
@@ -5995,7 +6004,7 @@ echo "Ethumb..........: yes"
 echo "Ethumb_Client...: yes"
 echo "Elua............: $have_elua"
 echo "Elementary......: yes (${features_elementary})"
-echo 
+echo
 
 echo
 

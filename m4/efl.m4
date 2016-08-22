@@ -280,6 +280,19 @@ requirements_libs_[]m4_defn([DOWN])="${requirements_libs_[]m4_defn([DOWN])} $2"
 m4_popdef([DOWN])dnl
 ])
 
+dnl EFL_ADD_PUBLIC_PC(PKG, PUBLIC_LIBS)
+dnl Add pkg that the EFL library will depend on when used.
+dnl
+dnl For instance if you use some other library in your header that user
+dnl inclues. While the library has a pkgconfig file.
+AC_DEFUN([EFL_ADD_PUBLIC_PC],
+[dnl
+m4_pushdef([DOWN], m4_translit([$1], [-A-Z], [_a-z]))dnl
+requirements_public_pc_[]m4_defn([DOWN])="${requirements_public_pc_[]m4_defn([DOWN])} $2"
+m4_popdef([DOWN])dnl
+])
+
+
 dnl EFL_ADD_PUBLIC_LIBS(PKG, PUBLIC_LIBS)
 dnl Add libraries that the EFL library will depend on when used.
 dnl
@@ -327,6 +340,9 @@ dnl
 dnl     requirements_pc_pkg: all pkg-config (pc) files used by this pkg,
 dnl             includes internal EFL (used in 'Requires.private' in pkg.pc)
 dnl
+dnl     requirements_public_pc_pkg: the pkg-config (pc) files used by the header
+dnl             of this pkg, includes internal EFL (used in 'Requires' in pkg.pc)
+dnl
 dnl     requirements_libs_pkg: external libraries this package needs when
 dnl             linking (used in 'Libs.private' in pkg.pc)
 dnl
@@ -354,6 +370,7 @@ requirements_internal_libs_[]m4_defn([DOWN])=""
 requirements_internal_deps_libs_[]m4_defn([DOWN])=""
 requirements_libs_[]m4_defn([DOWN])=""
 requirements_public_libs_[]m4_defn([DOWN])=""
+requirements_public_pc_[]m4_defn([DOWN])=""
 requirements_cflags_[]m4_defn([DOWN])=""
 requirements_pc_[]m4_defn([DOWN])=""
 requirements_pc_deps_[]m4_defn([DOWN])=""
@@ -367,6 +384,7 @@ m4_defn([UP])_CFLAGS="${m4_defn([UP])_CFLAGS}"
 
 AC_SUBST([requirements_libs_]m4_defn([DOWN]))dnl
 AC_SUBST([requirements_public_libs_]m4_defn([DOWN]))dnl
+AC_SUBST([requirements_public_pc_]m4_defn([DOWN]))dnl
 AC_SUBST([requirements_cflags_]m4_defn([DOWN]))dnl
 AC_SUBST([requirements_pc_]m4_defn([DOWN]))dnl
 AC_SUBST(m4_defn([UP])[_LIBS])dnl

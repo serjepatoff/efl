@@ -6,6 +6,7 @@ includedir=@includedir@
 Name: elput
 Description: E core library, libinput module
 Requires.private: @requirements_pc_elput@
+Requires: @requirements_public_pc_elput@
 Version: @VERSION@
 Libs: -L${libdir} -lelput
 Libs.private: @requirements_libs_elput@

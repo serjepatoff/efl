@@ -41,6 +41,7 @@ typedef enum
 } Render_Engine_Merge_Mode;
 
 typedef struct _Render_Engine_Software_Generic Render_Engine_Software_Generic;
+typedef struct _Render_Output Render_Output;
 typedef struct _Outbuf Outbuf;
 
 typedef Render_Engine_Swap_Mode (*Outbuf_Swap_Mode_Get)(Outbuf *ob);
@@ -64,6 +65,8 @@ struct _Render_Engine_Software_Generic
    Tilebuf_Rect *rects_prev[4];
    Eina_Inlist *cur_rect;
 
+   Eina_List *outputs;
+
    Outbuf_Swap_Mode_Get outbuf_swap_mode_get;
    Outbuf_Get_Rot outbuf_get_rot;
    Outbuf_Reconfigure outbuf_reconfigure;
@@ -85,6 +88,19 @@ struct _Render_Engine_Software_Generic
    unsigned char end : 1;
    unsigned char lost_back : 1;
    unsigned char tile_strict : 1;
+};
+
+struct _Render_Output
+{
+   Tilebuf *tb;
+   Tilebuf_Rect *rects;
+   Tilebuf_Rect *rects_prev[4];
+
+   RGBA_Image *output; // FIXME: allow for external source, not just pixels buffer
+
+   Eina_Rectangle screen;
+
+   unsigned char enable : 1;
 };
 
 static inline Eina_Bool

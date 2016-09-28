@@ -1514,6 +1514,11 @@ struct _Evas_Func
    void  (*ector_end)                    (void *data, void *context, Ector_Surface *ector, void *surface, void *engine_data, Eina_Bool do_async);
    void* (*ector_new)                    (void *data, void *context, Ector_Surface *ector, void *surface);
    void  (*ector_free)                   (void *engine_data);
+
+   void* (*output_add)                   (void *engine_data, void *context);
+   void  (*output_del)                   (void *engine_data, void *context, void *output);
+   void  (*output_define)                (void *engine_data, void *context, void *output, int x, int y, int w, int h);
+   void  (*output_state)                 (void *engine_data, void *context, void *output, Eina_Bool enable);
 };
 
 struct _Evas_Image_Save_Func

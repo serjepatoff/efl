@@ -3830,6 +3830,8 @@ static void
 eng_output_resize(void *data, int w, int h)
 {
    Render_Engine_Software_Generic *re;
+   Render_Output *out;
+   Eina_List *l;
 
    re = (Render_Engine_Software_Generic *)data;
    re->outbuf_reconfigure(re->ob, w, h, re->outbuf_get_rot(re->ob),
@@ -3843,43 +3845,86 @@ eng_output_resize(void *data, int w, int h)
      }
    re->w = w;
    re->h = h;
+
+   EINA_LIST_FOREACH(re->outputs, l, out)
+     {
+        evas_common_tilebuf_free(out->tb);
+        out->tb = evas_common_tilebuf_new(w - out->screen.x, h - out->screen.y);
+        if (out->tb)
+          {
+             evas_common_tilebuf_set_tile_size(out->tb, TILESIZE, TILESIZE);
+             evas_common_tilebuf_tile_strict_set(out->tb, re->tile_strict);
+          }
+     }
 }
 
 static void
 eng_output_tile_size_set(void *data, int w, int h)
 {
    Render_Engine_Software_Generic *re;
+   Render_Output *out;
+   Eina_List *l;
 
    re = (Render_Engine_Software_Generic *)data;
    evas_common_tilebuf_set_tile_size(re->tb, w, h);
+
+   EINA_LIST_FOREACH(re->outputs, l, out)
+     evas_common_tilebuf_set_tile_size(out->tb, w, h);
 }
 
 static void
 eng_output_redraws_rect_add(void *data, int x, int y, int w, int h)
 {
    Render_Engine_Software_Generic *re;
+   Render_Output *out;
+   Eina_List *l;
 
    re = (Render_Engine_Software_Generic *)data;
    evas_common_tilebuf_add_redraw(re->tb, x, y, w, h);
+
+   EINA_LIST_FOREACH(re->outputs, l, out)
+     {
+        Eina_Rectangle s, d;
+
+        EINA_RECTANGLE_SET(&s, x, y, w, h);
+        if (eina_rectangle_intersection(&s, &out->screen))
+          evas_common_tilebuf_add_redraw(out->tb, s.x - out->screen.x, s.y - out->screen.y, s.w, s.h);
+     }
 }
 
 static void
 eng_output_redraws_rect_del(void *data, int x, int y, int w, int h)
 {
    Render_Engine_Software_Generic *re;
+   Render_Output *out;
+   Eina_List *l;
 
    re = (Render_Engine_Software_Generic *)data;
    evas_common_tilebuf_del_redraw(re->tb, x, y, w, h);
+
+   EINA_LIST_FOREACH(re->outputs, l, out)
+     {
+        Eina_Rectangle s, d;
+
+        EINA_RECTANGLE_SET(&s, x, y, w, h);
+        if (eina_rectangle_intersection(&s, &out->screen))
+          evas_common_tilebuf_del_redraw(out->tb, s.x - out->screen.x, s.y - out->screen.y, s.w, s.h);
+     }
 }
 
 static void
 eng_output_redraws_clear(void *data)
 {
    Render_Engine_Software_Generic *re;
+   Render_Output *out;
+   Eina_List *l;
 
    re = (Render_Engine_Software_Generic *)data;
    evas_common_tilebuf_clear(re->tb);
    if (re->outbuf_redraws_clear) re->outbuf_redraws_clear(re->ob);
+
+   EINA_LIST_FOREACH(re->outputs, l, out)
+     evas_common_tilebuf_clear(out->tb);
 }
 
 static Tilebuf_Rect *
@@ -4246,6 +4291,69 @@ eng_output_idle_flush(void *data)
    if (re->outbuf_idle_flush) re->outbuf_idle_flush(re->ob);
 }
 
+static void *
+eng_output_add(void *engine_data, void *context EINA_UNUSED)
+{
+   Render_Engine_Software_Generic *re = engine_data;
+   Render_Output *ro;
+
+   ro = calloc(1, sizeof (Render_Output));
+   if (!ro) return NULL;
+
+   ro->tb = evas_common_tilebuf_new(1, 1);
+   if (ro->tb)
+     {
+        evas_common_tilebuf_set_tile_size(ro->tb, TILESIZE, TILESIZE);
+        evas_common_tilebuf_tile_strict_set(ro->tb, re->tile_strict);
+     }
+
+   ro->output = evas_cache_image_empty(evas_common_image_cache_get());
+
+   re->outputs = eina_list_append(re->outputs, ro);
+
+   return ro;
+}
+
+static void
+eng_output_del(void *engine_data, void *context EINA_UNUSED, void *output)
+{
+   Render_Engine_Software_Generic *re = engine_data;
+   Render_Output *ro = output;
+
+   re->outputs = eina_list_remove(re->outputs, ro);
+
+   evas_common_tilebuf_free_render_rects(ro->rects);
+   evas_common_tilebuf_free_render_rects(ro->rects_prev[0]);
+   evas_common_tilebuf_free_render_rects(ro->rects_prev[1]);
+   evas_common_tilebuf_free_render_rects(ro->rects_prev[2]);
+   evas_common_tilebuf_free_render_rects(ro->rects_prev[3]);
+   evas_cache_image_drop(ro->output);
+   free(ro);
+}
+
+static void
+eng_output_define(void *engine_data EINA_UNUSED, void *context EINA_UNUSED,
+                  void *output, int x, int y, int w, int h)
+{
+   Render_Output *ro = output;
+
+   evas_common_tilebuf_free(ro->tb);
+   ro->tb = evas_common_tilebuf_new(w, h);
+
+   EINA_RECTANGLE_SET(&ro->screen, x, y, w, h);
+
+   ro->output = evas_cache_image_size_set(&ro->output->cache_entry, w, h);
+}
+
+static void
+eng_output_state(void *engine_data EINA_UNUSED, void *context EINA_UNUSED,
+                 void *output, Eina_Bool enable)
+{
+   Render_Output *ro = output;
+
+   ro->enable = enable;
+}
+
 static Eina_Bool use_cairo;
 
 static Ector_Surface *
@@ -4563,6 +4671,7 @@ eng_ector_end(void *data EINA_UNUSED, void *context EINA_UNUSED, Ector_Surface *
 
 //------------------------------------------------//
 
+
 /*
  *****
  **
@@ -4758,7 +4867,12 @@ static Evas_Func func =
      eng_ector_renderer_draw,
      eng_ector_end,
      eng_ector_new,
-     eng_ector_free
+     eng_ector_free,
+
+     eng_output_add,
+     eng_output_del,
+     eng_output_define,
+     eng_output_state
    /* FUTURE software generic calls go here */
 };
 

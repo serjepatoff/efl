@@ -110,18 +110,17 @@ eo_debug_list_response_decode(void *buffer, int size)
    return list;
 }
 
-static Eina_Bool
-_debug_obj_del(void *data EINA_UNUSED, Eo *obj, const Eo_Event_Description *desc EINA_UNUSED, void *event_info EINA_UNUSED)
+static void
+_debug_obj_del(void *data EINA_UNUSED, const Efl_Event *ev)
 {
-   _objs_list = eina_list_remove(_objs_list, obj);
-   return EINA_TRUE;
+   _objs_list = eina_list_remove(_objs_list, ev->object);
 }
 
 static void
 _debug_object_add(Eo *obj)
 {
    _objs_list = eina_list_append(_objs_list, obj);
-   eo_do(obj, eo_event_callback_add(EO_EV_DEL, _debug_obj_del, NULL));
+   efl_event_callback_add(obj, EFL_EVENT_DEL, _debug_obj_del, NULL);
 }
 
 static const Eina_Debug_Opcode _debug_ops[] = {

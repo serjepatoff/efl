@@ -178,20 +178,30 @@ _edje_edit_eet_open(Edje *ed, Eet_File_Mode mode)
          return ed->file->ef;
       case EET_FILE_MODE_WRITE:
       case EET_FILE_MODE_READ_WRITE:
-         eetf = eet_open(ed->path, mode);
-         if (!eetf)
-           ERR("Unable to open \"%s\" for writing output", ed->path);
-         return eetf;
+         if (eet_mode_get(ed->file->ef) == EET_FILE_MODE_READ)
+           {
+              eetf = eet_open(ed->path, mode);
+              if (!eetf)
+                ERR("Unable to open \"%s\" for writing output", ed->path);
+              return eetf;
+           }
+         else
+           return ed->file->ef;
      }
    return NULL;
 }
 
 static void
-_edje_edit_eet_close(Eet_File *ef)
+_edje_edit_eet_close(Edje *ed, Eet_File *ef)
 {
    Eet_File_Mode mode = eet_mode_get(ef);
    if (mode != EET_FILE_MODE_READ)
-     eet_close(ef);
+     {
+        if (eet_mode_get(ed->file->ef) == EET_FILE_MODE_READ)
+          eet_close(ef);
+        else
+          eet_sync(ef);
+     }
 }
 
 EOLIAN static Eina_Bool
@@ -264,7 +274,7 @@ _edje_edit_efl_file_file_set(Eo *obj, Edje_Edit *eed, const char *file, const ch
           }
         free(keys);
      }
-   _edje_edit_eet_close(ef);
+   _edje_edit_eet_close(ed, ef);
 
    ret = EINA_TRUE;
 
@@ -469,7 +479,7 @@ _edje_edit_file_import(Edje *ed, const char *path, const char *entry, int compre
    if (!_edje_edit_edje_file_save(eetf, ed->file))
      goto on_error;
 
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
 
    eina_file_map_free(f, fdata);
    eina_file_close(f);
@@ -477,7 +487,7 @@ _edje_edit_file_import(Edje *ed, const char *path, const char *entry, int compre
    return EINA_TRUE;
 
 on_error:
-   if (eetf) _edje_edit_eet_close(eetf);
+   if (eetf) _edje_edit_eet_close(ed, eetf);
    eina_file_map_free(f, fdata);
    eina_file_close(f);
 
@@ -540,7 +550,7 @@ _edje_import_image_file(Edje *ed, const char *path, int id)
      {
         ERR("Unable to write image part \"%s\" part entry to %s",
             entry, ed->path);
-        _edje_edit_eet_close(eetf);
+        _edje_edit_eet_close(ed, eetf);
         evas_object_del(im);
         return EINA_FALSE;
      }
@@ -551,11 +561,11 @@ _edje_import_image_file(Edje *ed, const char *path, int id)
    if (!_edje_edit_edje_file_save(eetf, ed->file))
      {
         eet_delete(eetf, entry);
-        _edje_edit_eet_close(eetf);
+        _edje_edit_eet_close(ed, eetf);
         return EINA_FALSE;
      }
 
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
    return EINA_TRUE;
 }
 
@@ -1279,7 +1289,7 @@ edje_edit_sound_sample_del(Evas_Object *obj, const char *name)
       if (eet_delete(eetf, sample) <= 0)
         {
            WRN("Unable to delete \"%s\" sound", sample);
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
 
@@ -1301,16 +1311,16 @@ edje_edit_sound_sample_del(Evas_Object *obj, const char *name)
 
       if (!_delete_play_actions(obj, name, EDJE_ACTION_TYPE_SOUND_SAMPLE, eetf))
         {
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
 
       if (!_edje_edit_edje_file_save(eetf, ed->file))
         {
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
-      _edje_edit_eet_close(eetf);
+      _edje_edit_eet_close(ed, eetf);
    }
 
    GET_EED_OR_RETURN(EINA_FALSE);
@@ -1411,16 +1421,16 @@ edje_edit_sound_tone_del(Evas_Object *obj, const char *name)
 
       if (!_delete_play_actions(obj, name, EDJE_ACTION_TYPE_SOUND_TONE, eetf))
         {
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
 
       if (!_edje_edit_edje_file_save(eetf, ed->file))
         {
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
-      _edje_edit_eet_close(eetf);
+      _edje_edit_eet_close(ed, eetf);
    }
 
    GET_EED_OR_RETURN(EINA_FALSE);
@@ -1591,10 +1601,10 @@ edje_edit_sound_samplebuffer_get(Evas_Object *obj, const char *sample_name)
              if (len <= 0)
                {
                   ERR("Sample from edj file '%s' has 0 length", ed->path);
-                  _edje_edit_eet_close(ef);
+                  _edje_edit_eet_close(ed, ef);
                   return NULL;
                }
-             _edje_edit_eet_close(ef);
+             _edje_edit_eet_close(ed, ef);
              return eina_binbuf_manage_new(data, len, EINA_TRUE);
           }
      }
@@ -1710,7 +1720,7 @@ edje_edit_group_copy(Evas_Object *obj, const char *group_name, const char *copy_
    epc = eet_data_read(eetf, _edje_edd_edje_part_collection, buf);
    if (!epc)
      {
-        _edje_edit_eet_close(eetf);
+        _edje_edit_eet_close(ed, eetf);
         return EINA_FALSE;
      }
 
@@ -1743,7 +1753,7 @@ edje_edit_group_copy(Evas_Object *obj, const char *group_name, const char *copy_
    de = _alloc(sizeof(Edje_Part_Collection_Directory_Entry));
    if (!de)
      {
-        _edje_edit_eet_close(eetf);
+        _edje_edit_eet_close(ed, eetf);
         return EINA_FALSE;
      }
 
@@ -1793,7 +1803,7 @@ edje_edit_group_copy(Evas_Object *obj, const char *group_name, const char *copy_
    save_status = _edje_edit_edje_file_save(eetf, ed->file);
 
    _edje_collection_free(ed->file, epc, de);
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
 
    return save_status;
 }
@@ -1934,7 +1944,7 @@ edje_edit_group_del(Evas_Object *obj, const char *group_name)
         while (count);
         free(keys);
      }
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
 
    l = NULL; g = NULL;
    /* Free Group and all it's Aliases */
@@ -8660,17 +8670,17 @@ edje_edit_font_del(Evas_Object *obj, const char *alias)
       if (eet_delete(eetf, entry) <= 0)
         {
            ERR("Unable to delete \"%s\" font entry", entry);
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
 
       /* write the edje_file */
       if (!_edje_edit_edje_file_save(eetf, ed->file))
         {
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
-      _edje_edit_eet_close(eetf);
+      _edje_edit_eet_close(ed, eetf);
    }
 
    eina_hash_del(ed->file->fonts, alias, fnt);
@@ -9341,7 +9351,7 @@ edje_edit_image_set_del(Evas_Object *obj, const char *name)
                }
              if (!_edje_edit_collection_save(eetf, pce->ref))
                {
-                  _edje_edit_eet_close(eetf);
+                  _edje_edit_eet_close(ed, eetf);
                   return EINA_FALSE;
                }
           }
@@ -9351,7 +9361,7 @@ edje_edit_image_set_del(Evas_Object *obj, const char *name)
                                           sizeof(Edje_Image_Directory_Set_Entry) *
                                           ed->file->image_dir->sets_count);
 
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
 
    return EINA_TRUE;
 }
@@ -9758,7 +9768,7 @@ edje_edit_image_replace(Evas_Object *obj, const char *name, const char *new_name
                }
              if (!_edje_edit_collection_save(eetf, pce->ref))
                {
-                  _edje_edit_eet_close(eetf);
+                  _edje_edit_eet_close(ed, eetf);
                   eina_iterator_free(it);
                   return EINA_FALSE;
                }
@@ -9766,7 +9776,7 @@ edje_edit_image_replace(Evas_Object *obj, const char *name, const char *new_name
      }
    eina_iterator_free(it);
 
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
 
    return EINA_TRUE;
 }
@@ -9972,7 +9982,7 @@ edje_edit_image_del(Evas_Object *obj, const char *name)
       if (eet_delete(eetf, entry) <= 0)
         {
            ERR("Unable to delete \"%s\" font entry", entry);
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
       if (de_last->id != de->id)
@@ -10022,7 +10032,7 @@ edje_edit_image_del(Evas_Object *obj, const char *name)
                   }
                 if (!_edje_edit_collection_save(eetf, pce->ref))
                   {
-                     _edje_edit_eet_close(eetf);
+                     _edje_edit_eet_close(ed, eetf);
                      return EINA_FALSE;
                   }
              }
@@ -10034,11 +10044,11 @@ edje_edit_image_del(Evas_Object *obj, const char *name)
       /* write the edje_file */
       if (!_edje_edit_edje_file_save(eetf, ed->file))
         {
-           _edje_edit_eet_close(eetf);
+           _edje_edit_eet_close(ed, eetf);
            return EINA_FALSE;
         }
 
-      _edje_edit_eet_close(eetf);
+      _edje_edit_eet_close(ed, eetf);
    }
    _edje_edit_flag_script_dirty(eed, EINA_TRUE);
 
@@ -15550,7 +15560,7 @@ _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *p
    const char *aliased;
 
    obj = edje_edit_object_add(ed->base->evas);
-   if (!edje_object_file_set(obj, ed->file->path, group)) return EINA_FALSE;
+   if (!edje_object_mmap_set(obj, ed->file->f, group)) return EINA_FALSE;
 
    ef = _edje_edit_eet_open(ed, EET_FILE_MODE_READ);
    if (!ef)
@@ -15673,7 +15683,7 @@ _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *p
         return EINA_FALSE;
      }
 
-   _edje_edit_eet_close(ef);
+   _edje_edit_eet_close(ed, ef);
    evas_object_del(obj);
    return ret;
 }
@@ -16082,7 +16092,7 @@ _edje_edit_internal_save(Evas_Object *obj, int current_only, Eina_Bool generate_
 
    if (!_edje_edit_edje_file_save(eetf, ef))
      {
-        _edje_edit_eet_close(eetf);
+        _edje_edit_eet_close(ed, eetf);
         return EINA_FALSE;
      }
 
@@ -16094,7 +16104,7 @@ _edje_edit_internal_save(Evas_Object *obj, int current_only, Eina_Bool generate_
                  "[id: %d]", ed->collection->id);
              if (!_edje_edit_collection_save(eetf, ed->collection))
                {
-                  _edje_edit_eet_close(eetf);
+                  _edje_edit_eet_close(ed, eetf);
                   return EINA_FALSE;
                }
           }
@@ -16114,7 +16124,7 @@ _edje_edit_internal_save(Evas_Object *obj, int current_only, Eina_Bool generate_
                  "[id: %d]", edc->id);
              if (!_edje_edit_collection_save(eetf, edc))
                {
-                  _edje_edit_eet_close(eetf);
+                  _edje_edit_eet_close(ed, eetf);
                   return EINA_FALSE;
                }
           }
@@ -16128,7 +16138,7 @@ _edje_edit_internal_save(Evas_Object *obj, int current_only, Eina_Bool generate_
                       "[id: %d]", ce->id);
                   if (!_edje_edit_collection_save(eetf, ce->ref))
                     {
-                       _edje_edit_eet_close(eetf);
+                       _edje_edit_eet_close(ed, eetf);
                        return EINA_FALSE;
                     }
                }
@@ -16190,11 +16200,11 @@ _edje_edit_internal_save(Evas_Object *obj, int current_only, Eina_Bool generate_
    if (generate_source)
      if (!_edje_edit_source_save(eetf, obj))
        {
-          _edje_edit_eet_close(eetf);
+          _edje_edit_eet_close(ed, eetf);
           return EINA_FALSE;
        }
 
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
 
    /* Update mtime */
    {
@@ -16231,14 +16241,14 @@ edje_edit_clean_save_as(Evas_Object *obj, const char *new_file_name)
      {
         ERR("Error. unable to open \"%s\" for writing output",
             new_file_name);
-        _edje_edit_eet_close(ef);
+        _edje_edit_eet_close(ed, ef);
         return EINA_FALSE;
      }
 
    /* copying file structure */
    if (!_edje_edit_edje_file_save(ef_out, ed->file))
      {
-        _edje_edit_eet_close(ef);
+        _edje_edit_eet_close(ed, ef);
         eet_close(ef_out);
         return EINA_FALSE;
      }
@@ -16288,7 +16298,7 @@ edje_edit_clean_save_as(Evas_Object *obj, const char *new_file_name)
    /* generating source code */
    _edje_edit_source_save(ef_out, obj);
 
-   _edje_edit_eet_close(ef);
+   _edje_edit_eet_close(ed, ef);
    eet_close(ef_out);
 
    return EINA_TRUE;
@@ -16337,12 +16347,12 @@ edje_edit_without_source_save(Evas_Object *obj, Eina_Bool current_group)
      {
         ERR("Unable to clean edc source from edj file");
         free(sfl);
-        _edje_edit_eet_close(eetf);
+        _edje_edit_eet_close(ed, eetf);
         return EINA_FALSE;
      }
 
    free(sfl);
-   _edje_edit_eet_close(eetf);
+   _edje_edit_eet_close(ed, eetf);
    return EINA_TRUE;
 }
 

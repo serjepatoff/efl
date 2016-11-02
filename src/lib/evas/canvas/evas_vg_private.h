@@ -10,10 +10,35 @@ typedef struct _Efl_VG_Interpolation Efl_VG_Interpolation;
 
 typedef struct _Evas_VG_Data      Evas_VG_Data;
 
+typedef struct _Evg_Entry             Evg_Entry;
+typedef struct _Evas_Cache_Evg        Evas_Cache_Evg;
+
+struct _Evas_Cache_Evg
+{
+   Eina_Hash             *vg_hash;
+   Eina_Hash             *active;
+   int                    ref;
+};
+
+struct _Evg_Entry
+{
+   char                 *hash_key;
+   Eina_Stringshare     *src_file;
+   Eina_Stringshare     *src_key;
+   Eina_Stringshare     *dest_file;
+   Eina_Stringshare     *dest_key;
+   float                 key_frame;
+   int                   w;
+   int                   h;
+   Efl_VG               *root;
+   int                   ref;
+};
+
 struct _Evas_VG_Data
 {
    void   *engine_data;
    Efl_VG *root;
+   Evg_Entry  *evg;
 
    Eina_Rectangle fill;
 
@@ -67,6 +92,24 @@ struct _Efl_VG_Interpolation
    Eina_Point_3D scale;
    Eina_Point_3D skew;
 };
+
+
+void              evas_evg_cache_init(void);
+
+void              evas_evg_cache_shutdown(void);
+
+Evg_Entry*        evas_evg_cache_find(const char *src_file, const char *src_key,
+                                      const char *dest_file, const char *dest_key,
+                                      float key_frame, int w, int h);
+
+Efl_VG*           evas_evg_cache_vg_tree_get(Evg_Entry *svg_entry);
+
+void              evas_evg_cache_entry_del(Evg_Entry *svg_entry);
+
+Evg_Data *        evas_evg_cache_file_info(const char *file, const char *key);
+
+
+Eina_Bool         evas_evg_save_to_file(Evg_Data *evg_data, const char *file, const char *key, const char *flags);
 
 static inline Efl_VG_Data *
 _evas_vg_render_pre(Efl_VG *child, Ector_Surface *s, Eina_Matrix3 *m)

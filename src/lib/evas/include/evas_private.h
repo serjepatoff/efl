@@ -129,6 +129,8 @@ typedef struct _Evas_Canvas3D_Mesh_Eet         Evas_Canvas3D_Mesh_Eet;
 typedef struct _Evas_Canvas3D_Header_Eet       Evas_Canvas3D_Header_Eet;
 typedef struct _Evas_Canvas3D_File_Eet         Evas_Canvas3D_File_Eet;
 
+typedef struct _Evg_Data                       Evg_Data;
+
 struct _Evas_Canvas3D_Vec2_Eet
 {
    float x;
@@ -1521,14 +1523,21 @@ struct _Evas_Image_Save_Func
   int (*image_save) (RGBA_Image *im, const char *file, const char *key, int quality, int compress, const char *encoding);
 };
 
+struct _Evg_Data
+{
+   Eina_Rectangle  view_box;
+   Eina_Bool       preserve_aspect;
+   Efl_VG         *root;
+};
+
 struct _Evas_Vg_Load_Func
 {
-  void     *(*file_data) (Eina_File *f, Eina_Stringshare *key, int *error);
+   Evg_Data *(*file_data) (const char *file, const char *key, int *error);
 };
 
 struct _Evas_Vg_Save_Func
 {
-  int (*vg_save) (void *vg, const char *file, const char *key, int compress);
+   int (*vg_save) (Evg_Data *vg, const char *file, const char *key, int compress);
 };
 
 #ifdef __cplusplus

@@ -180,6 +180,7 @@ evas_object_vg_render(Evas_Object *eo_obj EINA_UNUSED,
                       int x, int y, Eina_Bool do_async)
 {
    Evas_VG_Data *vd = type_private_data;
+   Efl_VG *root = NULL;
    Ector_Surface *ector = evas_ector_get(obj->layer->evas);
    // FIXME: Set context (that should affect Ector_Surface) and
    // then call Ector_Renderer render from bottom to top. Get the
@@ -208,6 +209,17 @@ evas_object_vg_render(Evas_Object *eo_obj EINA_UNUSED,
                                                          obj->cur->anti_alias);
    obj->layer->evas->engine.func->context_render_op_set(output, context,
                                                         obj->cur->render_op);
+
+   if (vd->evg)
+     {
+        root = evas_evg_cache_vg_tree_get(vd->evg);
+        if (!root) return;
+        _evas_vg_render_pre(root, ector, NULL);
+     }
+   else
+     {
+        root = vd->root;
+     }
    obj->layer->evas->engine.func->ector_begin(output, context,
                                               ector, surface,
                                               vd->engine_data,
@@ -215,7 +227,7 @@ evas_object_vg_render(Evas_Object *eo_obj EINA_UNUSED,
                                               do_async);
    _evas_vg_render(obj, vd,
                    output, context, surface,
-                   vd->root, NULL,
+                   root, NULL,
                    do_async);
    obj->layer->evas->engine.func->ector_end(output, context, ector, surface, vd->engine_data, do_async);
 }
@@ -442,6 +454,90 @@ _evas_vg_efl_gfx_fill_fill_get(Eo *obj EINA_UNUSED, Evas_VG_Data *pd,
    if (y) *y = pd->fill.y;
    if (w) *w = pd->fill.w;
    if (h) *h = pd->fill.h;
+}
+
+// file set and save api implementation
+
+static Eina_Bool 
+_evas_vg_morphing_file_set(Eo *obj, Evas_VG_Data *pd, 
+                           const char *src_file, const char *src_key,
+                           const char *dest_file, const char *dest_key,
+                           float key_frame)
+{
+   int w, h;
+   Evg_Entry *entry;
+
+   evas_object_geometry_get(obj, NULL, NULL, &w, &h);
+   entry = evas_evg_cache_find(src_file, src_key, dest_file, dest_key, key_frame, w, h);
+   if (entry != pd->evg)
+     {
+        if (pd->evg)
+          {
+             evas_evg_cache_entry_del(pd->evg);
+          }
+        pd->evg = entry;
+     }
+   evas_object_change(obj, efl_data_scope_get(obj, EFL_CANVAS_OBJECT_CLASS));
+   return EINA_TRUE;
+}
+
+static void
+_evas_vg_morphing_file_get(Eo *obj EINA_UNUSED, Evas_VG_Data *pd,
+                           const char **src_file, const char **src_key,
+                           const char **dest_file, const char **dest_key,
+                           float *key_frame)
+{
+   const char *s_f = NULL, *s_k = NULL, *d_f = NULL , *d_k = NULL;
+   float frame = 0;
+
+   if (pd->evg)
+     {
+        s_f = pd->evg->src_file;
+        s_k = pd->evg->src_key;
+        d_f = pd->evg->dest_file;
+        d_k = pd->evg->dest_key;
+        frame = pd->evg->key_frame;
+     }
+
+   if (src_file) *src_file = s_f;
+   if (src_key)  *src_key = s_k;
+   if (dest_file) *dest_file = d_f;
+   if (dest_key)  *dest_key = d_k;
+   if (key_frame) *key_frame = frame;
+}
+
+static Eina_Bool 
+_evas_vg_efl_file_file_set(Eo *obj, Evas_VG_Data *pd, const char *file, const char *key)
+{
+   return _evas_vg_morphing_file_set(obj, pd, file, key, NULL, NULL, 0);
+}
+
+static void
+_evas_vg_efl_file_file_get(Eo *obj, Evas_VG_Data *pd, const char **file, const char **key)
+{
+   _evas_vg_morphing_file_get(obj, pd, file, key, NULL, NULL, NULL);
+}
+
+static Eina_Bool
+_evas_vg_efl_file_save(const Eo *obj, Evas_VG_Data *pd, const char *file, const char *key, const char *flags)
+{
+   Evg_Data tmp;
+   Evg_Data *info = &tmp;
+
+   if (pd->evg && pd->evg->src_file)
+     {
+        info = evas_evg_cache_file_info(pd->evg->src_file, pd->evg->src_key);
+     }
+   else
+     {
+        info->view_box.x = 0;
+        info->view_box.y = 0;
+        evas_object_geometry_get(obj, NULL, NULL, &info->view_box.w, &info->view_box.h);
+        info->root = pd->root;
+        info->preserve_aspect = EINA_FALSE;
+     }
+   evas_evg_save_to_file(info, file, key, flags);
+   return EINA_TRUE;
 }
 
 #include "evas_vg.eo.c"

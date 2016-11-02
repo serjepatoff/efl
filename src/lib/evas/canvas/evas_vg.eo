@@ -1,4 +1,4 @@
-class Evas.VG (Efl.Canvas.Object, Efl.Gfx.Fill, Efl.Gfx.View)
+class Evas.VG (Efl.Canvas.Object, Efl.Gfx.Fill, Efl.Gfx.View, Efl.File)
 {
    legacy_prefix: evas_object_vg;
    eo_prefix: evas_obj_vg;
@@ -17,6 +17,34 @@ class Evas.VG (Efl.Canvas.Object, Efl.Gfx.Fill, Efl.Gfx.View)
             container: Efl.Object; [[Root node of the VG canvas.]] /* FIXME: Should be Efl.VG */
          }
       }
+      @property morphing_file {
+         set {
+            [[Set the source file , destination file and key frame to do
+              morphing between those two file.
+
+              If the file supports multiple data stored in it (as Eet files do),
+              you can specify the key to be used as the index of the image in
+              this file.]]
+            return: bool;
+         }
+         get {
+            [[Retrieve the source , destination file and key frame used for morphing.
+
+              You must not modify the strings on the returned pointers.
+
+              Note: Use $null pointers on the file components you're not
+              interested in: they'll be ignored by the function.]]
+         }
+         values {
+            src_file: string; [[The source vg file path.]]
+            src_key: string; [[The image key in $src_file (if its an Eet one), or
+                                 $null, otherwise.]]
+            dest_file: string; [[The destination vg file path.]]
+            dest_key: string; [[The image key in $dest_file (if its an Eet one), or
+                                 $null, otherwise.]]
+            key_frame: float;[[The key frame that will be used for morphing.]]
+         }
+      }
    }
    implements {
       Efl.Object.constructor;
@@ -26,5 +54,8 @@ class Evas.VG (Efl.Canvas.Object, Efl.Gfx.Fill, Efl.Gfx.View)
       Efl.Gfx.Fill.fill.get;
       Efl.Gfx.View.view_size.set;
       Efl.Gfx.View.view_size.get;
+      Efl.File.file.set;
+      Efl.File.file.get;
+      Efl.File.save;
    }
 }

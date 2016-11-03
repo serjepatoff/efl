@@ -3320,66 +3320,34 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
 static void
 _edje_svg_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3 EINA_UNUSED, Edje_Part_Description_Vector *chosen_desc, FLOAT_T pos)
 {
+   int new_svg = -1; //invalid svg
    int w, h;
-   int new_svg = -1;
-   Efl_VG *root_vg;
-   Eina_Matrix3 matrix;
-   Edje_Vector_Data *start, *end;
+   char src_key[20], dest_key[20];
 
    evas_object_geometry_get(ep->object, NULL, NULL, &w, &h);
-
    if( (w == 0) || (h == 0)) return;
 
-   root_vg = evas_object_vg_root_node_get(ep->object);
+   sprintf(src_key, "edje/vectors/%i", chosen_desc->vg.id);
 
    if (ep->param2)
      {
         Edje_Part_Description_Vector *next_state = (Edje_Part_Description_Vector *)ep->param2->description;
         if (chosen_desc->vg.id != next_state->vg.id)
-          {
-             new_svg = next_state->vg.id;
-          }
-     }
-   if (new_svg >= 0) // animation with svg id change
-     {
-        start = _edje_ref_vector_data(ed, chosen_desc->vg.id);
-        end = _edje_ref_vector_data(ed, new_svg);
-
-        // for start vector
-        _apply_transformation(start->vg, w, h, start);
-
-        // for end vector
-        _apply_transformation(end->vg, w, h, end);
-
-        // do the interpolation
-        if (!evas_vg_node_interpolate(ep->typedata.vector->cur.vg, start->vg, end->vg, pos))
-          {
-             ERR(" Can't interpolate check the svg file \n");
-          }
-        // performance hack
-        // instead of duplicating the tree and applying the transformation
-        // i just updated the transformation matrix and reset it back to null.
-        // assumption is that the root vg will never have a transformation
-        eina_matrix3_identity(&matrix);
-        evas_vg_node_transformation_set(start->vg, &matrix);
-        evas_vg_node_transformation_set(end->vg, &matrix);
-     }
-   else 
-     {
-        if (ep->typedata.vector->cur.svg_id == chosen_desc->vg.id) // no svg file change
-          {
-             _apply_transformation(ep->typedata.vector->cur.vg, w, h, &ep->typedata.vector->cur);
-             return;
-          }
+          new_svg = next_state->vg.id;
         else
-          {
-             if (ep->typedata.vector->cur.vg)
-               efl_del(ep->typedata.vector->cur.vg);
+          pos = 0;
+     }
 
-             _edje_dupe_vector_data(ed, chosen_desc->vg.id, w, h, &ep->typedata.vector->cur);
-
-             efl_parent_set(ep->typedata.vector->cur.vg, root_vg);
-          }
+   if (new_svg < 0)
+     {
+        evas_obj_vg_morphing_file_set(ep->object, ed->file->path, src_key,
+                                      NULL, NULL, pos);
+     }
+   else
+     {
+        sprintf(dest_key, "edje/vectors/%i", new_svg);
+        evas_obj_vg_morphing_file_set(ep->object, ed->file->path, src_key,
+                                      ed->file->path, dest_key, pos);
      }
 }
 

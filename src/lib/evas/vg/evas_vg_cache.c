@@ -216,25 +216,6 @@ evas_evg_cache_file_info(const char *file, const char *key)
 }
 
 static void
-_apply_stroke_scale(Efl_VG *node, double scale)
-{
-   Efl_VG *child;
-   Eina_Iterator *itr;
-
-   if (efl_isa(node, EFL_VG_CONTAINER_CLASS))
-     {
-        itr = efl_vg_container_children_get(node);
-        EINA_ITERATOR_FOREACH(itr, child)
-          _apply_stroke_scale(child, scale);
-        eina_iterator_free(itr);
-     }
-   else
-     {
-         evas_vg_shape_stroke_scale_set(node, scale);
-     }
-}
-
-static void
 _apply_transformation(Efl_VG *root, double w, double h, Evg_Data *vg_data)
 {
    double sx, sy, scale;
@@ -258,7 +239,6 @@ _apply_transformation(Efl_VG *root, double w, double h, Evg_Data *vg_data)
         eina_matrix3_translate(&m, -vg_data->view_box.x, -vg_data->view_box.y);
      }
    evas_vg_node_transformation_set(root, &m);
-   _apply_stroke_scale(root, scale);
 }
 
 static Efl_VG *

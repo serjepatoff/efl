@@ -20,6 +20,7 @@
 #include "interfaces/efl_gfx_stack.eo.c"
 #include "interfaces/efl_gfx_fill.eo.c"
 #include "interfaces/efl_gfx_view.eo.c"
+#include "interfaces/efl_gfx_class.eo.c"
 
 #include "interfaces/efl_gfx_gradient.eo.c"
 #include "interfaces/efl_gfx_gradient_linear.eo.c"

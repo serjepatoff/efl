@@ -1,0 +1,234 @@
+interface Efl.Gfx.Class
+{
+   eo_prefix: efl_gfx_class;
+   methods {
+      @property class_color {
+         set {
+            [[Set the first color of color class.
+
+              This function sets the color values for a color class. This will
+              cause all edje parts in the specified object that have the specified
+              color class to have their colors multiplied by these values.
+
+              The first color is the object, the second is the text outline, and
+              the third is the text shadow. (Note that the second two only apply
+              to text parts).
+
+              Setting color emits a signal "color_class,set" with source being
+              the given color.
+
+              Note: unlike Evas, Edje colors are not pre-multiplied. That is,
+              half-transparent white is 255 255 255 128.]]
+            return: bool;
+         }
+         get {
+            [[Get the first color of color class.
+
+              This function gets the color values for a color class. If no explicit
+              object color is set, then global values will be used.
+
+              The first color is the object, the second is the text outline, and
+              the third is the text shadow. (Note that the second two only apply
+              to text parts).
+
+              Note: unlike Evas, Edje colors are not pre-multiplied. That is,
+              half-transparent white is 255 255 255 128.]]
+            return: bool;
+         }
+         keys {
+            color_class: string; [[The name of color class]]
+         }
+         values {
+            r: int; [[The intensity of the red color]]
+            g: int; [[The intensity of the green color]]
+            b: int; [[The intensity of the blue color]]
+            a: int; [[The alpha value]]
+         }
+      }
+      @property class_color2 {
+         set {
+            [[Set the second color of color class.
+
+              See also @.class_color.set().]]
+            return: bool;
+         }
+         get {
+            [[Get the second color of color class.
+
+              See also @.class_color.get().]]
+            return: bool;
+         }
+         keys {
+            color_class: string; [[The name of color class]]
+         }
+         values {
+            r: int; [[The intensity of the red color]]
+            g: int; [[The intensity of the green color]]
+            b: int; [[The intensity of the blue color]]
+            a: int; [[The alpha value]]
+         }
+      }
+      @property class_color3 {
+         set {
+            [[Set the third color of color class.
+
+              See also @.class_color.set().]]
+            return: bool;
+         }
+         get {
+            [[Get the third color of color class.
+
+              See also @.class_color.set().]]
+            return: bool;
+         }
+         keys {
+            color_class: string; [[The name of color class]]
+         }
+         values {
+            r: int; [[The intensity of the red color]]
+            g: int; [[The intensity of the green color]]
+            b: int; [[The intensity of the blue color]]
+            a: int; [[The alpha value]]
+         }
+      }
+      @property class_color_description {
+         get {
+            [[Get the description of a color class.
+
+              This function gets the description of a color class in use by an object.]]
+         }
+         keys {
+            color_class: string; [[The name of color class]]
+         }
+         values {
+            description: string; [[The description of the target color class or $null if not found]]
+         }
+      }
+      @property class_text {
+         set {
+            [[Set Edje text class.
+
+              This function sets the text class for the Edje.]]
+            return: bool; [[$true, on success or $false, on error]]
+         }
+         get {
+            [[Get font and font size from edje text class.
+
+              This function gets the font and the font size from text class.
+              The font string will only be valid until the text class is changed
+              or the edje object is deleted.]]
+            return: bool; [[$true, on success or $false, on error]]
+         }
+         keys {
+            text_class: string; [[The text class name]]
+         }
+         values {
+            font: string; [[Font name]]
+            size: int; [[Font Size]]
+            //size: Evas.Font.Size; [[Font Size]]
+         }
+      }
+      @property class_size_min {
+         set {
+            [[Set the minimum width and height of size class.
+
+              This function sets the min width and height for a size class.
+              This will make all edje parts in the specified object that have
+              the specified size class update their min size with given values.
+
+              @since 1.17]]
+            return: bool; [[$true, on success or $false, on error]]
+         }
+         get {
+            [[Get the minimum width and height of size class.
+
+              This function gets the min width and height for a size class.
+              These values will only be valid until the size class is changed
+              or the edje object is deleted.
+
+              @since 1.17]]
+            return: bool; [[$true, on success or $false, on error]]
+         }
+         keys {
+            size_class: string; [[The name of size class]]
+         }
+         values {
+            minw: int; [[Minimum width]]
+            minh: int; [[Minimum height]]
+         }
+      }
+      @property class_size_max {
+         set {
+            [[Set the maximum width and height of size class.
+
+              See also @.class_size_min.set().
+
+              @since 1.17]]
+            return: bool;
+         }
+         get {
+            [[Get the maximum width and height of size class.
+
+              See also @.class_size_min.get().
+
+              @since 1.17]]
+            return: bool;
+         }
+         keys {
+            size_class: string; [[The name of size class]]
+         }
+         values {
+            maxw: int; [[Maximum width]]
+            maxh: int; [[Maximum height]]
+         }
+      }
+      class_color_clear {
+         [[Clear all color classes.
+
+           @since 1.17.0]]
+         return: bool; [[$true, on success or $false, on error]]
+      }
+      class_color_del {
+         [[Delete the color class.
+
+           This function deletes any values for the specified color class.
+
+           Deleting the color class will revert it to the values defined
+           by @.class_color.set() (or color2, color3) or the color class
+           defined in the theme file.
+
+           Deleting the color class will emit the signal "color_class,del"
+           for the given Edje object.]]
+         params {
+            @in color_class: string; [[The color class to be deleted.]]
+         }
+      }
+      class_text_del {
+         [[Delete the text class.
+
+           This function deletes any values for the specified text class.
+
+           Deleting the text class will revert it to the values defined
+           by @.class_text.set() or the text class defined in the theme file.
+
+           @since 1.17]]
+         params {
+            @in text_class: string; [[The text class to be deleted.]]
+         }
+      }
+      class_size_del {
+         [[Delete the size class.
+
+           This function deletes any values for the specified size class.
+
+           Deleting the size class will revert it to the values defined
+           by @.class_size_min.set() (or max) or the size class defined
+           in the theme file.
+
+           @since 1.17]]
+         params {
+            @in size_class: string; [[The size class to be deleted.]]
+         }
+      }
+   }
+}

@@ -2,6 +2,7 @@
 ### Library
 
 edje_eolian_files = \
+	lib/edje/edje_global.eo \
 	lib/edje/edje_object.eo \
 	lib/edje/edje_edit.eo
 

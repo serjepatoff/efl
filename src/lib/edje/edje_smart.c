@@ -540,4 +540,13 @@ _edje_object_efl_observer_update(Eo *obj EINA_UNUSED, Edje *ed, Efl_Object *obs,
      }
 }
 
+EOLIAN static Efl_Object *
+_edje_object_efl_object_provider_find(Eo *obj EINA_UNUSED, Edje *ed EINA_UNUSED, const Efl_Class *klass)
+{
+   if (klass == EDJE_GLOBAL_CLASS)
+     return _edje_global_obj;
+
+   return NULL;
+}
+
 #include "edje_object.eo.c"

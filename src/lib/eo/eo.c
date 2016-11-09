@@ -1999,6 +1999,12 @@ efl_object_shutdown(void)
      {
         if (*cls_itr)
           eo_class_free(*cls_itr);
+        /*
+         * There is the case that a class destructor
+         * can call functions on a object from a class
+         * which is already destructed, so better NULL that out
+         */
+        *cls_itr = NULL;
      }
 
    eina_lock_take(&_efl_class_creation_lock);

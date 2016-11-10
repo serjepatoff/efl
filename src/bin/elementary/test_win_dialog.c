@@ -5,7 +5,7 @@
 
 
 
-void
+static void
 _bt_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Evas_Object *dia, *lb;
@@ -15,7 +15,7 @@ _bt_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_U
    elm_win_autodel_set(dia, EINA_TRUE);
 
    lb = elm_label_add(dia);
-   elm_object_text_set(lb, "This is a Dialog Window");
+   elm_object_text_set(lb, "This is a Dialog Window. Pick a color:");
    evas_object_size_hint_weight_set(lb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    elm_win_resize_object_add(dia, lb);
    evas_object_show(lb);
@@ -27,7 +27,7 @@ _bt_clicked_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_U
 void
 test_win_dialog(void *data EINA_UNUSED, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
-   Evas_Object *win, *box, *bt;
+   Evas_Object *win, *box, *bt, *cs;
 
    win = elm_win_util_standard_add("window-dia", "A Standard Window");
    elm_win_autodel_set(win, EINA_TRUE);

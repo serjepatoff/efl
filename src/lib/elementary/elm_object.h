@@ -508,3 +508,119 @@ EAPI void        elm_object_orientation_mode_disabled_set(Evas_Object *obj, Eina
  */
 EAPI Eina_Bool   elm_object_orientation_mode_disabled_get(const Evas_Object *obj);
 
+/**
+ * @brief Set the color of color class for a given widget.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] color_class The name of color class.
+ * @param[in] r The intensity of the red color.
+ * @param[in] g The intensity of the green color.
+ * @param[in] b The intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.19
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool        elm_object_color_class_color_set(Evas_Object *obj, const char *color_class, int r, int g, int b, int a);
+
+/**
+ * @brief Get the color of color class for a given widget.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] color_class The name of color class.
+ * @param[in] r The intensity of the red color.
+ * @param[in] g The intensity of the green color.
+ * @param[in] b The intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.19
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool        elm_object_color_class_color_get(Evas_Object *obj, const char *color_class, int *r, int *g, int *b, int *a);
+
+/**
+ * @brief Set the second color of color class for a given widget.
+ *
+ * The second color is commonly used for outline of text.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] color_class The name of color class.
+ * @param[in] r The intensity of the red color.
+ * @param[in] g The intensity of the green color.
+ * @param[in] b The intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.19
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool        elm_object_color_class_color2_set(Evas_Object *obj, const char *color_class, int r, int g, int b, int a);
+
+/**
+ * @brief Get the second color of color class for a given widget.
+ *
+ * The second color is commonly used for outline of text.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] color_class The name of color class.
+ * @param[in] r The intensity of the red color.
+ * @param[in] g The intensity of the green color.
+ * @param[in] b The intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.19
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool        elm_object_color_class_color2_get(Evas_Object *obj, const char *color_class, int *r, int *g, int *b, int *a);
+
+/**
+ * @brief Set the third color of color class for a given widget.
+ *
+ * The third color is commonly used for shadow of text.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] color_class The name of color class.
+ * @param[in] r The intensity of the red color.
+ * @param[in] g The intensity of the green color.
+ * @param[in] b The intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.19
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool        elm_object_color_class_color3_set(Evas_Object *obj, const char *color_class, int r, int g, int b, int a);
+
+/**
+ * @brief Get the third color of color class for a given widget.
+ *
+ * The third color is commonly used for shadow of text.
+ *
+ * @note These color values are expected to be premultiplied by @p a.
+ *
+ * @param[in] obj The Elementary widget.
+ * @param[in] color_class The name of color class.
+ * @param[in] r The intensity of the red color.
+ * @param[in] g The intensity of the green color.
+ * @param[in] b The intensity of the blue color.
+ * @param[in] a The alpha value.
+ *
+ * @since 1.19
+ *
+ * @ingroup General
+ */
+EAPI Eina_Bool        elm_object_color_class_color3_get(Evas_Object *obj, const char *color_class, int *r, int *g, int *b, int *a);
+

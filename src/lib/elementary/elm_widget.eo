@@ -29,7 +29,8 @@ struct Elm.Tooltip; [[Elementary tooltip]]
 struct Elm.Cursor; [[Elementary cursor]]
 struct @extern Elm.Theme; [[Elementary theme]]
 
-abstract Elm.Widget (Efl.Canvas.Group, Elm.Interface.Atspi_Accessible, Elm.Interface.Atspi_Component)
+abstract Elm.Widget (Efl.Canvas.Group, Elm.Interface.Atspi_Accessible, Elm.Interface.Atspi_Component,
+                     Efl.Gfx.Class)
 {
    legacy_prefix: elm_widget;
    eo_prefix: elm_obj_widget;
@@ -764,6 +765,12 @@ abstract Elm.Widget (Efl.Canvas.Group, Elm.Interface.Atspi_Accessible, Elm.Inter
       Efl.Gfx.visible.set;
       Efl.Gfx.position.set;
       Efl.Gfx.size.set;
+      Efl.Gfx.Class.class_color.set;
+      Efl.Gfx.Class.class_color.get;
+      Efl.Gfx.Class.class_color2.set;
+      Efl.Gfx.Class.class_color2.get;
+      Efl.Gfx.Class.class_color3.set;
+      Efl.Gfx.Class.class_color3.get;
       Efl.Canvas.Object.clip.set;
       Efl.Canvas.Object.no_render.set;
       Efl.Canvas.Group.group_calculate;

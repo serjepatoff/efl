@@ -610,4 +610,40 @@ void   _elm_entry_entry_paste(Evas_Object *obj, const char *entry);
 
 double _elm_atof(const char *s);
 
+#define _DIV_0xFF(x) ((x+1+((x+1)>>8))>>8)
+static inline void _elm_color_premul(int a, int *r, int *g, int *b)
+{
+   if (a == 0xff)
+     {
+        return;
+     }
+   else if (a == 0)
+     {
+        if (r) *r = 0;
+        if (g) *g = 0;
+        if (b) *b = 0;
+     }
+   else
+     {
+        if (r) *r = _DIV_0xFF((*r) * a);
+        if (g) *g = _DIV_0xFF((*g) * a);
+        if (b) *b = _DIV_0xFF((*b) * a);
+     }
+}
+
+static inline void _elm_color_unpremul(int a, int *r, int *g, int *b)
+{
+   if ((a == 0xff) || (a == 0))
+     {
+        return;
+     }
+   else
+     {
+        if (r) *r = (*r) * 255 / a;
+        if (g) *g = (*g) * 255 / a;
+        if (b) *b = (*b) * 255 / a;
+     }
+}
+#undef _DIV_0xFF
+
 #endif

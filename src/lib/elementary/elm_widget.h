@@ -430,6 +430,7 @@ typedef struct _Elm_Widget_Smart_Data
    int                           orient_mode; /* -1 is disabled */
    Elm_Focus_Move_Policy         focus_move_policy;
    Elm_Focus_Region_Show_Mode    focus_region_show_mode;
+   Eina_Hash                    *color_classes;
 
    Eina_Bool                     drag_x_locked : 1;
    Eina_Bool                     drag_y_locked : 1;

@@ -1934,3 +1934,52 @@ elm_object_focus_region_show_mode_get(const Evas_Object *obj)
 {
    return elm_widget_focus_region_show_mode_get(obj);
 }
+
+EAPI Eina_Bool
+elm_object_color_class_color_set(Evas_Object *obj, const char *color_class, int r, int g, int b, int a)
+{
+   Eina_Bool int_ret = EINA_FALSE;
+
+   return efl_gfx_class_color_set(obj, color_class, r, g, b, a);
+}
+
+EAPI Eina_Bool
+elm_object_color_class_color_get(Evas_Object *obj, const char *color_class, int *r, int *g, int *b, int *a)
+{
+   Eina_Bool int_ret = EINA_FALSE;
+
+   return efl_gfx_class_color_get(obj, color_class, r, g, b, a);
+}
+
+EAPI Eina_Bool
+elm_object_color_class_color2_set(Evas_Object *obj, const char *color_class, int r, int g, int b, int a)
+{
+   Eina_Bool int_ret = EINA_FALSE;
+
+   return efl_gfx_class_color2_set(obj, color_class, r, g, b, a);
+}
+
+EAPI Eina_Bool
+elm_object_color_class_color2_get(Evas_Object *obj, const char *color_class, int *r, int *g, int *b, int *a)
+{
+   Eina_Bool int_ret = EINA_FALSE;
+
+   return efl_gfx_class_color2_get(obj, color_class, r, g, b, a);
+}
+
+EAPI Eina_Bool
+elm_object_color_class_color3_set(Evas_Object *obj, const char *color_class, int r, int g, int b, int a)
+{
+   Eina_Bool int_ret = EINA_FALSE;
+
+   return efl_gfx_class_color3_set(obj, color_class, r, g, b, a);
+}
+
+EAPI Eina_Bool
+elm_object_color_class_color3_get(Evas_Object *obj, const char *color_class, int *r, int *g, int *b, int *a)
+{
+   Eina_Bool int_ret = EINA_FALSE;
+
+   return efl_gfx_class_color3_get(obj, color_class, r, g, b, a);
+}
+

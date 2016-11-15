@@ -124,6 +124,17 @@ int sd_fd_index = 0;
 int sd_fd_max = 0;
 #endif
 
+static inline Eina_Bool
+_getaddrinfo_again(int gai_error)
+{
+#ifdef EAI_SYSTEM
+   /* EAI_SYSTEM is not defined on windows, and seems to have no equivalent */
+   return ((gai_error == EAI_AGAIN) || ((gai_error == EAI_SYSTEM) && (errno == EINTR)));
+#else
+   return ((gai_error == EAI_AGAIN) || (errno == EINTR));
+#endif
+}
+
 void
 _ecore_con_client_kill(Ecore_Con_Client *obj)
 {
@@ -3356,7 +3367,7 @@ efl_net_ip_socket_activate_check(const char *address, int family, int type, Eina
                {
                   x = getaddrinfo(host, port, &hints, &results);
                }
-             while ((r == EAI_AGAIN) || ((r == EAI_SYSTEM) && (errno == EINTR)));
+             while (_getaddrinfo_again(r));
 
              if (x != 0)
                {
@@ -3461,8 +3472,7 @@ _efl_net_ip_resolve_async_run(void *data, Ecore_Thread *thread EINA_UNUSED)
         DBG("resolving host='%s' port='%s'", d->host, d->port);
         d->gai_error = getaddrinfo(d->host, d->port, d->hints, &d->result);
         if (d->gai_error == 0) break;
-        if (d->gai_error == EAI_AGAIN) continue;
-        if ((d->gai_error == EAI_SYSTEM) && (errno == EINTR)) continue;
+        if (_getaddrinfo_again(d->gai_error)) continue;
 
         DBG("getaddrinfo(\"%s\", \"%s\") failed: %s", d->host, d->port, gai_strerror(d->gai_error));
         break;
@@ -3815,7 +3825,7 @@ _efl_net_ip_resolve_and_connect(const char *host, const char *port, int type, in
 
    do
      r = getaddrinfo(host, port, &hints, &results);
-   while ((r == EAI_AGAIN) || ((r == EAI_SYSTEM) && (errno == EINTR)));
+   while (_getaddrinfo_again(r));
 
    if (r != 0)
      {
@@ -4027,7 +4037,7 @@ _efl_net_ip_connect_async_run_socks4(Efl_Net_Ip_Connect_Async_Data *d, const cha
 
    do
      r = getaddrinfo(host, port, &hints, &results);
-   while ((r == EAI_AGAIN) || ((r == EAI_SYSTEM) && (errno == EINTR)));
+   while (_getaddrinfo_again(r));
    if (r != 0)
      {
         DBG("couldn't resolve host='%s', port='%s': %s",
@@ -4127,7 +4137,7 @@ _efl_net_ip_connect_async_run_socks4a(Efl_Net_Ip_Connect_Async_Data *d, const ch
    /* we just resolve the port number here */
    do
      r = getaddrinfo(NULL, port, &hints, &results);
-   while ((r == EAI_AGAIN) || ((r == EAI_SYSTEM) && (errno == EINTR)));
+   while (_getaddrinfo_again(r));
    if (r != 0)
      {
         DBG("couldn't resolve port='%s': %s", port, gai_strerror(r));
@@ -4615,7 +4625,7 @@ _efl_net_ip_connect_async_run_socks5(Efl_Net_Ip_Connect_Async_Data *d, const cha
 
    do
      r = getaddrinfo(host, port, &hints, &results);
-   while ((r == EAI_AGAIN) || ((r == EAI_SYSTEM) && (errno == EINTR)));
+   while (_getaddrinfo_again(r));
    if (r != 0)
      {
         DBG("couldn't resolve host='%s', port='%s': %s",
@@ -4738,7 +4748,7 @@ _efl_net_ip_connect_async_run_socks5h(Efl_Net_Ip_Connect_Async_Data *d, const ch
                        /* we just resolve the port number here */
                        do
                          r = getaddrinfo(NULL, port, &hints, &results);
-                       while ((r == EAI_AGAIN) || ((r == EAI_SYSTEM) && (errno == EINTR)));
+                       while (_getaddrinfo_again(r));
                        if (r != 0)
                          {
                             DBG("couldn't resolve port='%s': %s", port, gai_strerror(r));

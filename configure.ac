@@ -458,6 +458,7 @@ execinfo.h \
 mcheck.h \
 sys/epoll.h \
 sys/inotify.h \
+sys/ioctl.h \
 sys/signalfd.h \
 sys/types.h \
 sys/param.h \

@@ -38,7 +38,9 @@
 # include <Evil.h>
 #endif
 
-#include <sys/ioctl.h>
+#ifdef HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
 
 #include "Ecore.h"
 #include "ecore_private.h"
